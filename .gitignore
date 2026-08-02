@@ -1,0 +1,47 @@
+# Environment files
+**/.env
+**/.env.*
+!**/.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+backend/.venv/
+backend/.pytest_cache/
+backend/.mypy_cache/
+backend/.ruff_cache/
+backend/.coverage
+backend/htmlcov/
+*.egg-info/
+
+# Node and Next.js
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/dist/
+frontend/coverage/
+frontend/.turbo/
+
+# Logs
+*.log
+logs/
+
+# IDE
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# Operating system
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Local data
+storage/
+uploads/
+*.sqlite
+*.sqlite3
+*.db
+*.faiss
+*.index

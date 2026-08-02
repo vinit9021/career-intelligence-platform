@@ -277,3 +277,20 @@ The next milestone will implement:
 - Request and response schemas
 - Authentication error handling
 - Unit and integration tests
+## Day 2 Authentication
+
+Implemented:
+
+- User registration
+- User login
+- Argon2 password hashing
+- JWT access tokens
+- JWT refresh tokens
+- Refresh-token rotation
+- Protected current-user route
+- Authentication validation
+- Authentication unit and integration tests
+
+Authentication documentation:
+
+docs/authentication.md

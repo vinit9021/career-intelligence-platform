@@ -277,6 +277,7 @@ The next milestone will implement:
 - Request and response schemas
 - Authentication error handling
 - Unit and integration tests
+
 ## Day 2 Authentication
 
 Implemented:
@@ -294,3 +295,77 @@ Implemented:
 Authentication documentation:
 
 docs/authentication.md
+
+## Day 3 — Database Persistence and Profile CRUD
+
+Day 3 introduces persistent PostgreSQL storage, Alembic migrations, a repository layer, and authenticated user/profile management.
+
+### Implemented
+
+- PostgreSQL integration using SQLAlchemy 2.0
+- Asynchronous database access using `asyncpg`
+- Async SQLAlchemy engine and session management
+- Alembic migration configuration
+- Initial production database migration
+- Repository pattern for user and profile persistence
+- One-to-one user profile model
+- Authenticated current-user CRUD operations
+- Authenticated profile CRUD operations
+- Pydantic validation for user and profile requests
+- Unit and integration tests for models, schemas, services, APIs, repositories, and migrations
+
+### Database Tables
+
+| Table             | Purpose                                                     |
+| ----------------- | ----------------------------------------------------------- |
+| `users`           | Stores user account and authentication information          |
+| `profiles`        | Stores one career profile for each user                     |
+| `refresh_tokens`  | Stores hashed refresh-token records used for token rotation |
+| `alembic_version` | Tracks the currently applied Alembic migration              |
+
+### Database Relationships
+
+- One user can have one profile.
+- One user can have multiple refresh-token records.
+- Deleting a user automatically deletes the related profile.
+- Deleting a user automatically deletes the related refresh-token records.
+
+### User Endpoints
+
+| Method   | Endpoint           | Description                                        |
+| -------- | ------------------ | -------------------------------------------------- |
+| `GET`    | `/api/v1/users/me` | Retrieve the authenticated user                    |
+| `PATCH`  | `/api/v1/users/me` | Update the authenticated user's email or full name |
+| `DELETE` | `/api/v1/users/me` | Delete the authenticated user's account            |
+
+### Profile Endpoints
+
+| Method   | Endpoint                   | Description                                       |
+| -------- | -------------------------- | ------------------------------------------------- |
+| `POST`   | `/api/v1/users/me/profile` | Create the authenticated user's profile           |
+| `GET`    | `/api/v1/users/me/profile` | Retrieve the authenticated user's profile         |
+| `PATCH`  | `/api/v1/users/me/profile` | Partially update the authenticated user's profile |
+| `DELETE` | `/api/v1/users/me/profile` | Delete the authenticated user's profile           |
+
+All user and profile endpoints require a valid JWT access token.
+
+### Profile Information
+
+The profile currently supports:
+
+- Professional headline
+- Location
+- Phone number
+- Professional biography
+- Years of experience
+- Target roles
+- Skills
+- LinkedIn URL
+- GitHub URL
+- Portfolio URL
+
+### Current Migration
+
+```text
+20260803_0001_create_users_profiles_and_refresh_tokens
+```

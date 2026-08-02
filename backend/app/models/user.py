@@ -4,12 +4,21 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
-from sqlalchemy import Boolean, DateTime, String, Uuid, false, func, true
+from sqlalchemy import (
+    Boolean,
+    DateTime,
+    String,
+    Uuid,
+    false,
+    func,
+    true,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
 
 if TYPE_CHECKING:
+    from app.models.profile import Profile
     from app.models.refresh_token import RefreshToken
 
 
@@ -63,4 +72,12 @@ class User(Base):
         back_populates="user",
         cascade="all, delete-orphan",
         passive_deletes=True,
+    )
+
+    profile: Mapped[Profile | None] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        single_parent=True,
+        uselist=False,
     )

@@ -13,10 +13,11 @@ from app.core.config import Settings, get_settings
 from app.db.base import Base
 from app.db.session import get_db_session
 from app.main import app
-from app.models import RefreshToken, User
+from app.models import Profile, RefreshToken, User
 
 REGISTERED_TEST_MODELS = (
     User,
+    Profile,
     RefreshToken,
 )
 
@@ -27,7 +28,7 @@ SessionFactory = async_sessionmaker[AsyncSession]
 async def test_session_factory(
     tmp_path: Path,
 ) -> AsyncIterator[SessionFactory]:
-    database_path = tmp_path / "auth-test.db"
+    database_path = tmp_path / "career-intelligence-test.db"
 
     engine = create_async_engine(f"sqlite+aiosqlite:///{database_path}")
 

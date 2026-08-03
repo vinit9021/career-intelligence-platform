@@ -44,4 +44,4 @@ uploads/
 *.sqlite3
 *.db
 *.faiss
-*.index
+*.indexbackend/storage/

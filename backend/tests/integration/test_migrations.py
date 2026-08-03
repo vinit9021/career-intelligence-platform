@@ -1,7 +1,9 @@
 import pytest
 from sqlalchemy import inspect, text
 from sqlalchemy.engine import Connection
-from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy.ext.asyncio import (
+    create_async_engine,
+)
 from sqlalchemy.pool import NullPool
 
 from app.core.config import get_settings
@@ -14,7 +16,7 @@ def get_table_names(
 
 
 @pytest.mark.asyncio
-async def test_initial_migration_is_applied() -> None:
+async def test_latest_migration_is_applied() -> None:
     engine = create_async_engine(
         get_settings().database_url,
         poolclass=NullPool,
@@ -33,6 +35,7 @@ async def test_initial_migration_is_applied() -> None:
         "users",
         "profiles",
         "refresh_tokens",
+        "resumes",
     }.issubset(table_names)
 
-    assert revision == "20260803_0001"
+    assert revision == "20260803_0002"

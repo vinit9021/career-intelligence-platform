@@ -369,3 +369,189 @@ The profile currently supports:
 ```text
 20260803_0001_create_users_profiles_and_refresh_tokens
 ```
+
+## Day 4 — Resume Upload and Storage Foundation
+
+Day 4 adds secure resume uploading, configurable storage backends, AWS S3 integration, and persistent resume metadata.
+
+### Implemented
+
+- JWT-protected resume upload endpoint
+- PDF and DOCX file support
+- File-extension and internal file validation
+- Configurable maximum upload size
+- Local filesystem storage
+- AWS S3 storage
+- Common storage-provider abstraction
+- Generated private storage keys
+- SHA-256 file checksums
+- S3 server-side encryption
+- Resume metadata persistence
+- File cleanup when database persistence fails
+- Unit and integration tests
+
+Resume parsing, text extraction, ATS scoring, embeddings, and AI-agent processing are not included in Day 4.
+
+### Resume Upload Endpoint
+
+| Method | Endpoint                | Description                 |
+| ------ | ----------------------- | --------------------------- |
+| `POST` | `/api/v1/resume/upload` | Upload a PDF or DOCX resume |
+
+The endpoint requires a valid JWT access token.
+
+The request must use `multipart/form-data` with a file field named:
+
+```text
+file
+```
+
+### Supported Formats
+
+- PDF (`.pdf`)
+- DOCX (`.docx`)
+
+The backend validates both the filename extension and the internal file structure.
+
+### Upload Size Limit
+
+The default maximum file size is 10 MB.
+
+```env
+RESUME_MAX_SIZE_MB=10
+```
+
+### Storage Backends
+
+The active storage backend is selected using `STORAGE_BACKEND`.
+
+Local development configuration:
+
+```env
+STORAGE_BACKEND=local
+LOCAL_STORAGE_PATH=storage
+```
+
+AWS S3 configuration:
+
+```env
+STORAGE_BACKEND=s3
+AWS_REGION=ap-south-1
+AWS_S3_BUCKET=your-private-resume-bucket
+```
+
+Optional AWS settings:
+
+```env
+AWS_S3_ENDPOINT_URL=
+AWS_S3_KMS_KEY_ID=
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_SESSION_TOKEN=
+```
+
+When explicit AWS credentials are not provided, Boto3 can use its standard AWS credential resolution chain.
+
+### Storage Key Format
+
+Uploaded resumes use generated storage keys:
+
+```text
+resumes/{user_id}/{resume_id}/original.{extension}
+```
+
+The original uploaded filename is stored separately in the database.
+
+Internal local paths and S3 storage keys are not exposed in the public API response.
+
+### Resume Database Model
+
+Resume metadata is stored in the `resumes` table.
+
+| Column              | Purpose                     |
+| ------------------- | --------------------------- |
+| `id`                | Unique resume identifier    |
+| `user_id`           | Resume owner identifier     |
+| `original_filename` | Original uploaded filename  |
+| `storage_backend`   | Local or S3 storage backend |
+| `storage_key`       | Internal storage object key |
+| `storage_etag`      | Storage ETag or checksum    |
+| `content_type`      | Validated content type      |
+| `file_extension`    | Validated file extension    |
+| `file_size_bytes`   | Uploaded file size          |
+| `sha256`            | SHA-256 checksum            |
+| `created_at`        | Upload timestamp            |
+
+One user can upload multiple resumes.
+
+```text
+users 1 ---- many resumes
+```
+
+### Upload Workflow
+
+1. Authenticate the user using JWT.
+2. Read the uploaded file within the configured limit.
+3. Validate the filename and extension.
+4. Validate the PDF signature or DOCX structure.
+5. Generate a SHA-256 checksum.
+6. Generate a unique resume identifier and storage key.
+7. Save the file using local storage or AWS S3.
+8. Save the resume metadata in the database.
+9. Return the public resume response.
+
+### Error Responses
+
+| Status | Meaning                                |
+| ------ | -------------------------------------- |
+| `201`  | Resume uploaded successfully           |
+| `401`  | Authentication is required             |
+| `413`  | File exceeds the configured size limit |
+| `422`  | File format or structure is invalid    |
+| `500`  | Resume metadata could not be persisted |
+| `503`  | Storage backend is unavailable         |
+
+### Database Migration
+
+Day 4 introduces:
+
+```text
+20260803_0002_create_resumes
+```
+
+Apply and verify the migration from the `backend` directory:
+
+```powershell
+alembic upgrade head
+alembic current
+alembic history
+alembic check
+```
+
+Expected current revision:
+
+```text
+20260803_0002 (head)
+```
+
+### Day 4 Verification
+
+Run from the `backend` directory:
+
+```powershell
+ruff format app tests migrations
+ruff check app tests migrations
+ruff format --check app tests migrations
+mypy app tests
+pytest
+```
+
+The complete test suite must pass with at least 90% coverage.
+
+### Documentation
+
+Detailed resume storage documentation is available at:
+
+```text
+docs/resume-storage.md
+```

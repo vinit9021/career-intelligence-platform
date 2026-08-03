@@ -13,13 +13,18 @@ from sqlalchemy import (
     func,
     true,
 )
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import (
+    Mapped,
+    mapped_column,
+    relationship,
+)
 
 from app.db.base import Base
 
 if TYPE_CHECKING:
     from app.models.profile import Profile
     from app.models.refresh_token import RefreshToken
+    from app.models.resume import Resume
 
 
 class User(Base):
@@ -30,37 +35,44 @@ class User(Base):
         primary_key=True,
         default=uuid4,
     )
+
     email: Mapped[str] = mapped_column(
         String(320),
         nullable=False,
         unique=True,
         index=True,
     )
+
     password_hash: Mapped[str] = mapped_column(
         String(255),
         nullable=False,
     )
+
     full_name: Mapped[str] = mapped_column(
         String(120),
         nullable=False,
     )
+
     is_active: Mapped[bool] = mapped_column(
         Boolean,
         nullable=False,
         default=True,
         server_default=true(),
     )
+
     is_verified: Mapped[bool] = mapped_column(
         Boolean,
         nullable=False,
         default=False,
         server_default=false(),
     )
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
         server_default=func.now(),
     )
+
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
@@ -80,4 +92,10 @@ class User(Base):
         passive_deletes=True,
         single_parent=True,
         uselist=False,
+    )
+
+    resumes: Mapped[list[Resume]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
     )

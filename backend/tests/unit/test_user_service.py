@@ -1,8 +1,8 @@
+import pytest
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
     async_sessionmaker,
 )
-import pytest
 
 from app.models import User
 from app.schemas.users import (

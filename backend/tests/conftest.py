@@ -2,23 +2,35 @@ from collections.abc import AsyncIterator
 from pathlib import Path
 
 import pytest_asyncio
-from httpx2 import ASGITransport, AsyncClient
+from httpx2 import (
+    ASGITransport,
+    AsyncClient,
+)
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
     async_sessionmaker,
     create_async_engine,
 )
 
-from app.core.config import Settings, get_settings
+from app.core.config import (
+    Settings,
+    get_settings,
+)
 from app.db.base import Base
 from app.db.session import get_db_session
 from app.main import app
-from app.models import Profile, RefreshToken, User
+from app.models import (
+    Profile,
+    RefreshToken,
+    Resume,
+    User,
+)
 
 REGISTERED_TEST_MODELS = (
     User,
     Profile,
     RefreshToken,
+    Resume,
 )
 
 SessionFactory = async_sessionmaker[AsyncSession]
@@ -51,6 +63,7 @@ async def test_session_factory(
 @pytest_asyncio.fixture
 async def auth_client(
     test_session_factory: SessionFactory,
+    tmp_path: Path,
 ) -> AsyncIterator[AsyncClient]:
     test_settings = Settings.model_validate(
         {
@@ -73,6 +86,9 @@ async def auth_client(
             "jwt_audience": ("career-intelligence-platform-api-test"),
             "access_token_expire_minutes": 15,
             "refresh_token_expire_days": 7,
+            "storage_backend": "local",
+            "local_storage_path": str(tmp_path / "storage"),
+            "resume_max_size_mb": 1,
         }
     )
 

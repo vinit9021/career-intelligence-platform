@@ -1,4 +1,4 @@
-from app.db.base import Base, NAMING_CONVENTION
+from app.db.base import NAMING_CONVENTION, Base
 
 
 def test_base_uses_predictable_constraint_names() -> None:

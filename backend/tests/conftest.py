@@ -23,6 +23,7 @@ from app.models import (
     Profile,
     RefreshToken,
     Resume,
+    ResumeParseResult,
     User,
 )
 
@@ -31,6 +32,7 @@ REGISTERED_TEST_MODELS = (
     Profile,
     RefreshToken,
     Resume,
+    ResumeParseResult,
 )
 
 SessionFactory = async_sessionmaker[AsyncSession]

@@ -555,3 +555,59 @@ Detailed resume storage documentation is available at:
 ```text
 docs/resume-storage.md
 ```
+
+## Day 5 — Resume Parsing Foundation
+
+Day 5 adds deterministic PDF and DOCX resume parsing, OCR readiness detection, structured JSON generation, and persistent parse results.
+
+### Implemented
+
+- Parser interface and parser registry
+- PDF text extraction with `pypdf`
+- DOCX paragraph and table extraction with `python-docx`
+- Password-protected and corrupt document handling
+- Low-text detection for future OCR processing
+- Structured extraction for contact information, summary, skills, education, experience, projects, and certifications
+- Persistent raw text, structured JSON, parser metadata, and warnings
+- Resume parse statuses: `pending`, `processing`, `completed`, `needs_ocr`, and `failed`
+- JWT-protected parse and parsed-result endpoints
+- Unit, service, API, storage-read, and migration tests
+
+### Resume Parsing Endpoints
+
+| Method | Endpoint                            | Description                       |
+| ------ | ----------------------------------- | --------------------------------- |
+| `POST` | `/api/v1/resume/{resume_id}/parse`  | Parse an uploaded resume          |
+| `GET`  | `/api/v1/resume/{resume_id}/parsed` | Retrieve the stored parsed result |
+
+### Current Migration
+
+```text
+20260803_0003_add_resume_parsing
+```
+
+### Dependencies
+
+```text
+pypdf==6.14.2
+python-docx==1.2.0
+```
+
+### Verification
+
+```powershell
+ruff format app tests migrations
+ruff check app tests migrations
+ruff format --check app tests migrations
+mypy app tests
+alembic upgrade head
+alembic current
+alembic check
+pytest
+```
+
+Detailed documentation:
+
+```text
+docs/resume-parsing.md
+```

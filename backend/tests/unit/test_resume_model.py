@@ -21,6 +21,9 @@ def test_resume_table_has_required_columns() -> None:
         "file_extension",
         "file_size_bytes",
         "sha256",
+        "parse_status",
+        "parse_error",
+        "parsed_at",
         "created_at",
     }
 
@@ -31,7 +34,6 @@ def test_resume_table_has_required_columns() -> None:
 
 def test_resume_references_user_with_cascade() -> None:
     table = Base.metadata.tables["resumes"]
-
     foreign_keys = table.c.user_id.foreign_keys
 
     assert len(foreign_keys) == 1

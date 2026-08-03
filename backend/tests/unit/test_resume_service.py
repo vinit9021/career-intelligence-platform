@@ -3,10 +3,7 @@ from typing import Literal
 
 import pytest
 from pytest import MonkeyPatch
-from sqlalchemy.ext.asyncio import (
-    AsyncSession,
-    async_sessionmaker,
-)
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.models import Resume, User
 from app.services.resumes import (
@@ -14,11 +11,7 @@ from app.services.resumes import (
     ResumeService,
     ResumeStorageUnavailableError,
 )
-from app.storage import (
-    LocalStorage,
-    StorageOperationError,
-    StoredFile,
-)
+from app.storage import LocalStorage, StorageOperationError, StoredFile
 
 SessionFactory = async_sessionmaker[AsyncSession]
 
@@ -28,7 +21,7 @@ async def create_user(
 ) -> User:
     user = User(
         email="alice@example.com",
-        password_hash=("stored-password-hash"),
+        password_hash="stored-password-hash",
         full_name="Alice Example",
     )
 
@@ -77,7 +70,9 @@ async def test_resume_service_uploads_and_persists(
 
 
 class FailingStorage:
-    name: Literal["local"] = "local"
+    @property
+    def name(self) -> Literal["local"]:
+        return "local"
 
     async def save(
         self,
@@ -95,6 +90,14 @@ class FailingStorage:
         )
 
         raise StorageOperationError("storage failed")
+
+    async def read(
+        self,
+        *,
+        key: str,
+    ) -> bytes:
+        _ = key
+        return b""
 
     async def delete(
         self,
@@ -121,7 +124,7 @@ async def test_storage_failure_is_wrapped(
             await service.upload(
                 user=user,
                 filename="resume.pdf",
-                content_type=("application/pdf"),
+                content_type="application/pdf",
                 data=b"%PDF-1.7\nresume",
             )
 
@@ -156,10 +159,10 @@ async def test_file_is_removed_when_database_fails(
             await service.upload(
                 user=user,
                 filename="resume.pdf",
-                content_type=("application/pdf"),
+                content_type="application/pdf",
                 data=b"%PDF-1.7\nresume",
             )
 
-        stored_files = [path for path in (storage.root.rglob("*")) if path.is_file()]
+        stored_files = [file_path for file_path in storage.root.rglob("*") if file_path.is_file()]
 
         assert stored_files == []

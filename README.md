@@ -611,3 +611,61 @@ Detailed documentation:
 ```text
 docs/resume-parsing.md
 ```
+
+## Day 6 — Resume Parser API, Viewer, and History
+
+Day 6 exposes the resume parser through a complete authenticated API and adds viewer, history, secure original-file access, and deletion workflows.
+
+### Implemented
+
+- Resume parsing status endpoint
+- Paginated resume history ordered newest first
+- Resume metadata endpoint
+- Viewer-ready structured resume response
+- Secure original PDF/DOCX download
+- Local storage and AWS S3 file retrieval
+- User ownership enforcement
+- Resume deletion with parse-result cascade
+- Physical file cleanup
+- Compensating file restoration when database deletion fails
+- Unit and integration tests
+
+### Resume API Endpoints
+
+| Method   | Endpoint                                  | Description                                      |
+| -------- | ----------------------------------------- | ------------------------------------------------ |
+| `GET`    | `/api/v1/resume/history`                  | List resume history with pagination              |
+| `GET`    | `/api/v1/resume/{resume_id}`              | Retrieve resume metadata                         |
+| `GET`    | `/api/v1/resume/{resume_id}/parse-status` | Retrieve current parse status                    |
+| `GET`    | `/api/v1/resume/{resume_id}/viewer`       | Retrieve viewer-ready parsed content             |
+| `GET`    | `/api/v1/resume/{resume_id}/file`         | Download the original private file               |
+| `DELETE` | `/api/v1/resume/{resume_id}`              | Delete the resume, parse result, and stored file |
+
+Existing parser endpoints remain:
+
+| Method | Endpoint                            | Description                          |
+| ------ | ----------------------------------- | ------------------------------------ |
+| `POST` | `/api/v1/resume/{resume_id}/parse`  | Parse an uploaded resume             |
+| `GET`  | `/api/v1/resume/{resume_id}/parsed` | Retrieve the persisted parsed result |
+
+### Pagination
+
+```text
+GET /api/v1/resume/history?page=1&page_size=20
+```
+
+`page_size` accepts values from 1 to 100.
+
+### Migration
+
+Day 6 introduces no database migration. The current Alembic head remains:
+
+```text
+20260803_0003 (head)
+```
+
+Detailed documentation:
+
+```text
+docs/resume-api.md
+```

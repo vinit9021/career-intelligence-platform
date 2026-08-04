@@ -1,11 +1,11 @@
 from typing import Annotated
-from urllib.parse import quote
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Query, Response, status
 
 from app.api.dependencies import CurrentUser
 from app.api.dependencies.resume_library import ResumeLibraryServiceDependency
+from app.core.private_files import build_private_file_headers
 from app.schemas.auth import ErrorResponse
 from app.schemas.resume_library import (
     ResumeDeleteResponse,
@@ -148,14 +148,14 @@ async def download_resume_file(
             detail=str(exc),
         ) from exc
 
-    encoded_filename = quote(payload.filename, safe="")
     return Response(
         content=payload.data,
         media_type=payload.content_type,
-        headers={
-            "Content-Disposition": (f"attachment; filename*=UTF-8''{encoded_filename}"),
-            "X-Content-SHA256": payload.sha256,
-        },
+        headers=build_private_file_headers(
+            filename=payload.filename,
+            sha256=payload.sha256,
+            size_bytes=len(payload.data),
+        ),
     )
 
 

@@ -722,3 +722,73 @@ Detailed completion documentation:
 ```text
 docs/phase1-completion.md
 ```
+
+## Day 8 — Job Description Parser
+
+Day 8 adds a deterministic parser that converts pasted job-description text into structured Pydantic JSON.
+
+### Implemented
+
+- Job-description text normalization
+- Empty and oversized input validation
+- Unsafe control-character removal
+- Job-title extraction
+- Company-name extraction when present
+- Required-skill extraction
+- Preferred-skill extraction
+- Technology and tool extraction
+- Responsibility extraction
+- Qualification extraction
+- Experience requirement extraction
+- Education requirement extraction
+- Seniority classification
+- ATS keyword extraction
+- Parser warnings and metadata
+- Unit and schema tests
+
+### Structured Output
+
+The parser returns:
+
+```text
+job_title
+company_name
+required_skills
+preferred_skills
+technologies
+responsibilities
+qualifications
+experience
+education_requirements
+seniority_level
+ats_keywords
+normalized_text
+metadata
+```
+
+### Usage
+
+```python
+from app.parsers import JobDescriptionParser
+
+parser = JobDescriptionParser()
+result = parser.parse(job_description_text)
+payload = result.model_dump(mode="json")
+```
+
+### Day 8 Non-Scope
+
+- Job-description API
+- Database persistence
+- Job-description history
+- Resume matching
+- ATS scoring
+- Resume optimization
+- Embeddings or FAISS
+- LangGraph orchestration
+
+Detailed documentation:
+
+```text
+docs/job-description-parser.md
+```

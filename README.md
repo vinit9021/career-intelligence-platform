@@ -1333,65 +1333,392 @@ Future integration:
 - Connect the structured result to the Resume Matching Agent
 - Include the analyzer inside the complete multi-agent LangGraph workflow
 
-## Day 9 — Resume Matching Engine
+## Day 9 — Resume Matching AI Agent
 
-Day 9 adds a deterministic and explainable engine that compares parsed resume data with parsed job-description data.
+Day 9 upgrades the original deterministic resume-matching engine into a hybrid Agentic AI matching system using LangChain, LangGraph, Groq, Pydantic structured output, semantic evidence validation, retry handling, and deterministic fallback.
 
-### Implemented
+### Objective
 
-- Required-skill matching
-- Preferred-skill matching
-- Technology and tool matching
-- ATS-keyword matching
-- Alias normalization
-- Experience comparison
-- Education comparison
+Compare a structured resume with an analyzed job description and generate an evidence-based match assessment using both deterministic scoring and Groq-powered semantic reasoning.
+
+The matching system identifies:
+
+- Matching required skills
+- Missing required skills
+- Matching preferred skills
+- Missing preferred skills
+- Matching technologies
+- Missing technologies
+- Matching ATS keywords
+- Missing ATS keywords
+- Experience alignment
+- Education alignment
 - Responsibility alignment
-- Resume evidence extraction
-- Weighted overall match score
-- Strength and weakness explanations
-- Category-level scoring breakdown
-- Deterministic-output tests
+- Resume strengths
+- Resume weaknesses
+- Evidence supporting each semantic match
+- Category-level scores
+- Overall resume-job match score
 
-### Scoring Categories
+### Hybrid Matching Architecture
 
 ```text
-Required skills
-Preferred skills
-Technologies
-ATS keywords
+Structured Resume
+        +
+Analyzed Job Description
+        ↓
+Deterministic Matching Engine
+        ↓
+Baseline Match Result
+        ↓
+LangChain + Groq Resume Matching Agent
+        ↓
+Semantic Requirement Analysis
+        ↓
+Responsibility Alignment Analysis
+        ↓
+Evidence and Hallucination Validation
+        ↓
+Valid Result / Retry / Deterministic Fallback
+        ↓
+Hybrid Resume-Job Match Result
+```
+
+### Deterministic Matching Layer
+
+The original Day 9 deterministic matching engine remains responsible for:
+
+- Exact skill matching
+- Alias-aware technology matching
+- Required-skill comparison
+- Preferred-skill comparison
+- ATS keyword comparison
+- Experience-range comparison
+- Education comparison
+- Initial responsibility alignment
+- Category-level scoring
+- Weighted overall score
+- Deterministic fallback behavior
+
+The deterministic output is used as the baseline for the AI agent.
+
+### Resume Matching AI Agent
+
+The Groq Resume Matching Agent performs semantic comparison when resume and job-description wording differ.
+
+Example:
+
+```text
+Job requirement:
+Cloud deployment
+
+Resume evidence:
+Deployed backend services on AWS for production workloads.
+```
+
+Although the exact phrase `Cloud deployment` may not appear in the resume, the agent can recognize that deploying services on AWS provides semantic evidence for the requirement.
+
+The agent returns:
+
+- Overall semantic score
+- Semantic requirement evidence
+- Responsibility-level assessments
+- Exact supporting resume excerpts
+- Source section for each excerpt
+- Explanation of each semantic relationship
+- Confidence score
+- Candidate strengths
+- Candidate weaknesses
+- Warnings
+- Semantic match summary
+
+### Semantic Requirement Evidence
+
+Each semantic match contains:
+
+```text
+requirement
+resume_excerpt
+source_section
+explanation
+confidence
+```
+
+Example:
+
+```text
+Requirement:
+Cloud deployment
+
+Resume excerpt:
+Deployed backend services on AWS for production workloads.
+
+Source section:
 Experience
-Education
-Responsibilities
+
+Explanation:
+Deploying production backend services on AWS demonstrates
+practical cloud-deployment experience.
+
+Confidence:
+0.90
 ```
 
-Categories that are not specified in the job description are excluded and their weights are redistributed across applicable categories.
+Only sufficiently supported semantic evidence is allowed to update the deterministic result.
 
-### Usage
+### Responsibility Alignment
 
-```python
-from app.matching import match_resume_to_job
-
-result = match_resume_to_job(
-    resume=parsed_resume.content,
-    job_description=parsed_job_description,
-    resume_raw_text=parsed_resume.raw_text,
-)
-```
-
-### Day 9 Non-Scope
-
-- Matching API
-- Database persistence
-- ATS rewriting
-- Resume optimization
-- Resume version creation
-- Embeddings or FAISS
-- LLM calls
-- LangGraph orchestration
-
-Detailed documentation:
+Each job responsibility is classified as:
 
 ```text
-docs/resume-matching-engine.md
+aligned
+partially_aligned
+not_aligned
 ```
+
+Each responsibility assessment contains:
+
+```text
+responsibility
+status
+score
+resume_excerpt
+explanation
+```
+
+The responsibility score is calculated using both:
+
+- Deterministic responsibility alignment
+- Groq semantic responsibility analysis
+
+### Hybrid Scoring
+
+The final result combines deterministic and semantic matching.
+
+Semantic evidence may move a requirement from the missing list to the matched list only when:
+
+- The requirement exists in the job description
+- The resume contains supporting evidence
+- The evidence excerpt is present in the resume
+- The confidence score meets the minimum threshold
+- The validator accepts the semantic relationship
+
+The following category scores are recalculated after semantic matching:
+
+- Required-skills score
+- Preferred-skills score
+- Technology score
+- ATS-keyword score
+- Responsibility score
+- Overall weighted match score
+
+Experience and education scoring continue to use the deterministic matching engine.
+
+### Evidence Validation
+
+The semantic validator checks that:
+
+- Every analyzed requirement exists in the job description
+- Every analyzed responsibility exists in the job description
+- Every resume excerpt exists in the supplied resume
+- Duplicate evidence is detected
+- Duplicate responsibility analysis is rejected
+- Low-confidence evidence produces a warning
+- Unsupported evidence causes validation failure
+- Fabricated resume information is rejected
+- Fabricated job requirements are rejected
+
+Example of invalid evidence:
+
+```text
+Agent evidence:
+Managed Kubernetes clusters.
+
+Actual resume:
+No Kubernetes experience is present.
+```
+
+This output fails validation and is not included in the final match result.
+
+### Agent Guardrails
+
+The Resume Matching Agent is instructed to:
+
+- Use only evidence present in the resume
+- Never invent skills
+- Never invent experience
+- Never invent education
+- Never invent projects
+- Never invent employers
+- Never invent achievements
+- Never invent responsibilities
+- Never invent metrics
+- Quote exact resume evidence for semantic matches
+- Keep required and preferred requirements separate
+- Avoid assuming one technology proves knowledge of another
+- Use the deterministic baseline only as supporting evidence
+- Correct validation errors during retries
+- Return only the required Pydantic structured output
+
+### Retry Handling
+
+When semantic output fails validation and attempts remain, validation feedback is sent back to the agent.
+
+```text
+Semantic Agent Output
+        ↓
+Evidence Validation Failure
+        ↓
+Validation Errors Stored
+        ↓
+Groq Agent Retries
+        ↓
+Corrected Semantic Output
+```
+
+The maximum number of attempts is controlled by the shared agent configuration.
+
+```env
+AGENT_MODEL_MAX_RETRIES=2
+```
+
+### Deterministic Fallback
+
+When Groq is unavailable, the request fails, or semantic output remains invalid after all attempts, the system returns the deterministic matching result.
+
+The workflow status becomes:
+
+```text
+completed_with_fallback
+```
+
+The result contains the warning:
+
+```text
+AI semantic matching was unavailable or invalid.
+The deterministic matching result was used.
+```
+
+The platform therefore continues producing a valid match result even when the AI provider is unavailable.
+
+### Matching Statuses
+
+```text
+pending
+baselining
+analyzing
+validating
+retrying
+completed
+completed_with_fallback
+failed
+```
+
+### Main Agentic Files
+
+```text
+backend/app/agents/resume_matching/__init__.py
+backend/app/agents/resume_matching/agent.py
+backend/app/agents/resume_matching/state.py
+backend/app/agents/resume_matching/validator.py
+backend/app/prompts/resume_matching.py
+backend/app/workflows/resume_matching.py
+backend/tests/agents/test_resume_matching_agent.py
+backend/tests/workflows/test_resume_matching_workflow.py
+```
+
+### Existing Supporting Files
+
+The original deterministic Day 9 implementation remains available as the baseline matcher and fallback.
+
+```text
+backend/app/matching/
+backend/app/schemas/resume_matching.py
+backend/tests/unit/test_resume_matching_engine.py
+backend/tests/unit/test_resume_matching_schema.py
+```
+
+### Groq Configuration
+
+The Resume Matching Agent uses the shared Groq configuration.
+
+```env
+LLM_PROVIDER=groq
+GROQ_API_KEY=your-private-groq-api-key
+GROQ_MODEL=llama-3.3-70b-versatile
+AGENT_TIMEOUT_SECONDS=60
+AGENT_MODEL_MAX_RETRIES=2
+```
+
+The real Groq API key remains inside `.env` and must never be committed to GitHub.
+
+### Technology Stack
+
+- Python
+- FastAPI
+- LangChain
+- LangGraph
+- Groq API
+- ChatGroq
+- Pydantic
+- Deterministic matching
+- Semantic reasoning
+- Evidence validation
+- Pytest
+- Ruff
+- MyPy
+
+### Testing
+
+Day 9 includes tests for:
+
+- Anti-hallucination prompt instructions
+- Agent prompt-payload generation
+- Supported semantic evidence
+- Unsupported resume-excerpt rejection
+- Successful hybrid matching
+- Semantic requirement promotion
+- Semantic responsibility alignment
+- Retry after invalid AI output
+- Deterministic fallback after Groq failure
+- Existing deterministic matching behavior
+- Technology aliases
+- Experience estimation
+- Education matching
+- Responsibility evidence
+- Score boundaries
+- Deterministic output consistency
+- Effective scoring weights
+- Request and response schema validation
+
+The focused Day 9 test suite currently contains 21 tests, and all 21 tests passed.
+
+### Day 9 Status
+
+Implemented:
+
+- Groq Resume Matching AI Agent
+- LangChain structured output
+- Semantic requirement analysis
+- Semantic responsibility analysis
+- Exact resume evidence extraction
+- Confidence-based evidence handling
+- Evidence validation
+- Hallucination protection
+- Conditional retries
+- Deterministic fallback
+- Hybrid score calculation
+- Strength and weakness merging
+- Agent tests
+- Workflow tests
+- Existing deterministic regression tests
+
+Pending final verification:
+
+- Confirm the corrected Day 9 MyPy check passes
+- Run the complete backend test suite
+- Confirm project-wide coverage
+- Connect the hybrid matching workflow to the production API
+- Connect stored resumes and stored job descriptions
+- Persist generated match results
+- Integrate the matcher with the future ATS Optimization Agent

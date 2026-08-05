@@ -792,3 +792,66 @@ Detailed documentation:
 ```text
 docs/job-description-parser.md
 ```
+
+## Day 9 — Resume Matching Engine
+
+Day 9 adds a deterministic and explainable engine that compares parsed resume data with parsed job-description data.
+
+### Implemented
+
+- Required-skill matching
+- Preferred-skill matching
+- Technology and tool matching
+- ATS-keyword matching
+- Alias normalization
+- Experience comparison
+- Education comparison
+- Responsibility alignment
+- Resume evidence extraction
+- Weighted overall match score
+- Strength and weakness explanations
+- Category-level scoring breakdown
+- Deterministic-output tests
+
+### Scoring Categories
+
+```text
+Required skills
+Preferred skills
+Technologies
+ATS keywords
+Experience
+Education
+Responsibilities
+```
+
+Categories that are not specified in the job description are excluded and their weights are redistributed across applicable categories.
+
+### Usage
+
+```python
+from app.matching import match_resume_to_job
+
+result = match_resume_to_job(
+    resume=parsed_resume.content,
+    job_description=parsed_job_description,
+    resume_raw_text=parsed_resume.raw_text,
+)
+```
+
+### Day 9 Non-Scope
+
+- Matching API
+- Database persistence
+- ATS rewriting
+- Resume optimization
+- Resume version creation
+- Embeddings or FAISS
+- LLM calls
+- LangGraph orchestration
+
+Detailed documentation:
+
+```text
+docs/resume-matching-engine.md
+```

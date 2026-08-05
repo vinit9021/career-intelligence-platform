@@ -556,61 +556,332 @@ Detailed resume storage documentation is available at:
 docs/resume-storage.md
 ```
 
-## Day 5 — Resume Parsing Foundation
+## Day 5 — Resume Parser AI Agent
 
-Day 5 adds deterministic PDF and DOCX resume parsing, OCR readiness detection, structured JSON generation, and persistent parse results.
+Day 5 implements an Agentic AI–based resume parsing workflow using LangChain, LangGraph, and the Groq LLM API.
 
-### Implemented
+### Objective
 
-- Parser interface and parser registry
-- PDF text extraction with `pypdf`
-- DOCX paragraph and table extraction with `python-docx`
-- Password-protected and corrupt document handling
-- Low-text detection for future OCR processing
-- Structured extraction for contact information, summary, skills, education, experience, projects, and certifications
-- Persistent raw text, structured JSON, parser metadata, and warnings
-- Resume parse statuses: `pending`, `processing`, `completed`, `needs_ocr`, and `failed`
-- JWT-protected parse and parsed-result endpoints
-- Unit, service, API, storage-read, and migration tests
+Convert uploaded PDF and DOCX resumes into validated, structured JSON while ensuring that the system does not invent information that is absent from the original resume.
 
-### Resume Parsing Endpoints
-
-| Method | Endpoint                            | Description                       |
-| ------ | ----------------------------------- | --------------------------------- |
-| `POST` | `/api/v1/resume/{resume_id}/parse`  | Parse an uploaded resume          |
-| `GET`  | `/api/v1/resume/{resume_id}/parsed` | Retrieve the stored parsed result |
-
-### Current Migration
+### Complete Workflow
 
 ```text
-20260803_0003_add_resume_parsing
+User uploads PDF/DOCX resume
+        ↓
+File validation
+        ↓
+Secure local or AWS S3 storage
+        ↓
+PDF/DOCX text extraction
+        ↓
+Deterministic baseline parser
+        ↓
+LangGraph Resume Parser workflow
+        ↓
+LangChain + Groq Resume Parser Agent
+        ↓
+Pydantic structured output
+        ↓
+Factuality validation
+        ↓
+Valid / Retry / OCR Required / Fallback
+        ↓
+Structured resume result
+        ↓
+PostgreSQL persistence
 ```
 
-### Dependencies
+### Resume Parser AI Agent
+
+The Resume Parser Agent semantically understands the extracted resume text and organizes it into structured sections.
+
+It extracts:
+
+- Contact information
+- Professional summary
+- Technical and professional skills
+- Work experience
+- Education
+- Projects
+- Certifications
+- Achievements
+- Languages
+- Professional links
+- Additional resume sections
+
+The agent uses Groq through LangChain and returns its response using the existing Pydantic resume schema instead of returning unstructured text.
+
+### Agentic Architecture
+
+The Resume Parser Agent is implemented using the following components:
 
 ```text
-pypdf==6.14.2
-python-docx==1.2.0
+LangChain
+    ↓
+Prompt construction and structured LLM output
+
+Groq Chat Model
+    ↓
+Semantic understanding of resume content
+
+LangGraph
+    ↓
+Workflow state, routing, retries and fallback
+
+Pydantic
+    ↓
+Structured and validated resume output
+
+Deterministic Validator
+    ↓
+Factuality and evidence checks
 ```
 
-### Verification
+### LangGraph Workflow State
 
-```powershell
-ruff format app tests migrations
-ruff check app tests migrations
-ruff format --check app tests migrations
-mypy app tests
-alembic upgrade head
-alembic current
-alembic check
-pytest
-```
-
-Detailed documentation:
+The workflow maintains a shared state containing:
 
 ```text
-docs/resume-parsing.md
+resume_text
+baseline_result
+agent_result
+final_result
+attempt_count
+max_attempts
+validation_errors
+warnings
+requires_ocr
+workflow_status
+last_error
 ```
+
+Supported workflow statuses include:
+
+```text
+pending
+assessing_text
+analyzing
+validating
+retrying
+completed
+completed_with_fallback
+needs_ocr
+failed
+```
+
+### Workflow Nodes
+
+#### 1. Text Assessment Node
+
+Checks whether the extracted resume text is meaningful and sufficiently long.
+
+When the extracted text is too short or unusable, the resume is marked as:
+
+```text
+needs_ocr
+```
+
+#### 2. Resume Analysis Node
+
+Sends the following information to the Groq Resume Parser Agent:
+
+- Original extracted resume text
+- Deterministic baseline result
+- Resume parsing system prompt
+- Validation feedback from previous attempts
+- Required Pydantic output schema
+
+#### 3. Validation Node
+
+Validates the structured result returned by the AI agent.
+
+The validator checks:
+
+- Whether meaningful resume content was returned
+- Whether extracted email addresses exist in the source resume
+- Whether extracted phone numbers exist in the source resume
+- Whether extracted skills have supporting evidence
+- Whether the output follows the required Pydantic schema
+- Whether unsupported information was generated
+
+#### 4. Retry Route
+
+When validation fails and attempts remain, LangGraph sends the validation errors back to the Resume Parser Agent.
+
+```text
+Agent output
+    ↓
+Validation failed
+    ↓
+Validation feedback added to state
+    ↓
+Agent runs again
+    ↓
+Corrected structured output
+```
+
+#### 5. Deterministic Fallback Route
+
+When Groq is unavailable or the retry limit is exhausted, the workflow uses the deterministic parser result as a controlled fallback.
+
+The result is marked as:
+
+```text
+completed_with_fallback
+```
+
+A warning is included to indicate that AI parsing was unavailable or invalid.
+
+#### 6. OCR Route
+
+When a PDF contains scanned images and does not provide sufficient extractable text, the workflow returns:
+
+```text
+requires_ocr = true
+status = needs_ocr
+```
+
+Full OCR processing will be implemented separately.
+
+### Agent Guardrails
+
+The Resume Parser Agent is instructed to:
+
+- Use only information explicitly present in the source resume
+- Never invent skills, employers, roles, dates, degrees or achievements
+- Never invent measurable results or experience
+- Preserve organization names and technology names accurately
+- Preserve email addresses, phone numbers and URLs accurately
+- Keep dates in their original form when uncertain
+- Return empty values when information is unavailable
+- Separate experience, education, projects and certifications correctly
+- Correct earlier mistakes using validator feedback
+- Return only structured output matching the required schema
+
+### Existing Day 5 Components
+
+The earlier deterministic Day 5 implementation remains in the project because it provides tools and infrastructure required by the AI agent.
+
+Existing components are used for:
+
+- PDF text extraction
+- DOCX text extraction
+- File validation
+- Secure resume storage
+- Deterministic baseline generation
+- AI-agent fallback behavior
+- Database persistence
+- Resume history
+- API integration
+- Result validation
+
+The deterministic parser is no longer intended to be the main intelligence layer. It acts as an agent tool, baseline generator, validator and fallback.
+
+### Groq Configuration
+
+The project uses Groq instead of the OpenAI API.
+
+Required private `.env` configuration:
+
+```env
+LLM_PROVIDER=groq
+GROQ_API_KEY=your-private-groq-api-key
+GROQ_MODEL=llama-3.3-70b-versatile
+AGENT_TIMEOUT_SECONDS=60
+AGENT_MODEL_MAX_RETRIES=2
+```
+
+The real Groq API key is stored only in the private `.env` file and must never be committed to GitHub.
+
+The public `.env.example` contains only placeholders:
+
+```env
+LLM_PROVIDER=groq
+GROQ_API_KEY=replace-with-groq-api-key
+GROQ_MODEL=llama-3.3-70b-versatile
+AGENT_TIMEOUT_SECONDS=60
+AGENT_MODEL_MAX_RETRIES=2
+```
+
+### Main Agentic Files
+
+```text
+backend/app/agents/base/errors.py
+backend/app/agents/resume_parser/agent.py
+backend/app/agents/resume_parser/state.py
+backend/app/agents/resume_parser/validator.py
+backend/app/llm/factory.py
+backend/app/prompts/resume_parser.py
+backend/app/workflows/resume_parser.py
+backend/tests/agents/test_resume_parser_agent.py
+backend/tests/workflows/test_resume_parser_workflow.py
+backend/requirements-agentic.txt
+```
+
+### Technology Stack
+
+- Python
+- FastAPI
+- LangChain
+- LangGraph
+- Groq API
+- ChatGroq
+- Pydantic
+- PostgreSQL
+- SQLAlchemy
+- PDF text extraction
+- DOCX text extraction
+- Local storage
+- AWS S3 storage abstraction
+- Pytest
+- Ruff
+- MyPy
+
+### Testing
+
+Automated Day 5 agent tests use mocked LangChain runnables and do not make real paid API calls.
+
+Implemented tests cover:
+
+- Resume Parser Agent input preparation
+- Prompt factuality instructions
+- Successful structured resume generation
+- LangGraph workflow execution
+- Retry after a temporary model failure
+- OCR routing for insufficient text
+- Structured-output validation
+- Workflow status transitions
+
+The focused agent and workflow tests pass successfully.
+
+### Day 5 Status
+
+Completed:
+
+- Groq LLM factory
+- LangChain Resume Parser Agent
+- Dedicated resume parsing prompt
+- Pydantic structured output
+- LangGraph workflow state
+- Text-quality assessment
+- AI resume analysis node
+- Factuality validation
+- Conditional retry routing
+- OCR-required routing
+- Deterministic fallback
+- Mocked agent tests
+- Mocked LangGraph workflow tests
+
+Remaining before Day 5 is fully complete:
+
+- Connect the existing PDF/DOCX extraction service to the LangGraph workflow
+- Update the existing resume parsing service and API to invoke the AI agent
+- Persist the final AI-agent result using the existing repository
+- Add API-to-agent integration tests
+- Add database persistence integration tests
+- Run the complete project test suite
+- Confirm project coverage remains at least 90%
 
 ## Day 6 — Resume Parser API, Viewer, and History
 

@@ -994,75 +994,344 @@ Detailed completion documentation:
 docs/phase1-completion.md
 ```
 
-## Day 8 — Job Description Parser
+## Day 8 — Job Description Analyzer AI Agent
 
-Day 8 adds a deterministic parser that converts pasted job-description text into structured Pydantic JSON.
+Day 8 upgrades the original deterministic Job Description Parser into an Agentic AI workflow using LangChain, LangGraph, Groq, Pydantic structured output, evidence validation, conditional retries, and controlled fallback behavior.
 
-### Implemented
+### Objective
 
-- Job-description text normalization
-- Empty and oversized input validation
-- Unsafe control-character removal
-- Job-title extraction
-- Company-name extraction when present
-- Required-skill extraction
-- Preferred-skill extraction
-- Technology and tool extraction
-- Responsibility extraction
-- Qualification extraction
-- Experience requirement extraction
-- Education requirement extraction
-- Seniority classification
-- ATS keyword extraction
-- Parser warnings and metadata
-- Unit and schema tests
+Semantically analyze raw job descriptions and convert them into validated structured data that can be used by the Resume Matching Agent, ATS Optimization Agent, Company Research Agent, Skill Gap Agent, and application-tracking workflows.
 
-### Structured Output
-
-The parser returns:
+### Complete Workflow
 
 ```text
-job_title
-company_name
-required_skills
-preferred_skills
-technologies
-responsibilities
-qualifications
-experience
-education_requirements
-seniority_level
-ats_keywords
+Raw Job Description
+        ↓
+Text Normalization
+        ↓
+Deterministic Baseline Parser
+        ↓
+LangGraph Job Description Analyzer Workflow
+        ↓
+LangChain + Groq Job Description Analyzer Agent
+        ↓
+Pydantic Structured Output
+        ↓
+Evidence and Hallucination Validation
+        ↓
+Valid Result / Retry / Deterministic Fallback
+        ↓
+Structured Job Description Analysis
+```
+
+### Job Description Analyzer AI Agent
+
+The Job Description Analyzer Agent semantically understands natural-language job descriptions and extracts:
+
+- Job title
+- Company name
+- Required skills
+- Preferred skills
+- Technologies and tools
+- Responsibilities
+- Qualifications
+- Minimum and maximum experience requirements
+- Education requirements
+- Seniority level
+- ATS keywords
+- Normalized job-description text
+- Warnings and analysis metadata
+
+Unlike the original deterministic parser, the AI agent can understand different recruiting sentence structures such as:
+
+```text
+We Dolat Capital are looking for a Software Engineer.
+Join Dolat Capital as a Backend Developer.
+Dolat Capital seeks an experienced Python Engineer.
+At Dolat Capital, you will develop backend services.
+Our engineering team is hiring a FastAPI developer.
+```
+
+### Agentic Architecture
+
+```text
+LangChain
+    ↓
+Prompt construction and structured LLM invocation
+
+Groq Chat Model
+    ↓
+Semantic understanding of job-description content
+
+LangGraph
+    ↓
+Workflow state, nodes, routing, retries and fallback
+
+Pydantic
+    ↓
+Validated structured job-description output
+
+Deterministic Validator
+    ↓
+Evidence checks and hallucination detection
+```
+
+### LangGraph Workflow State
+
+The workflow maintains shared state containing:
+
+```text
+job_description_text
 normalized_text
-metadata
+baseline_result
+agent_result
+final_result
+attempt_count
+max_attempts
+validation_errors
+warnings
+status
+last_error
 ```
 
-### Usage
-
-```python
-from app.parsers import JobDescriptionParser
-
-parser = JobDescriptionParser()
-result = parser.parse(job_description_text)
-payload = result.model_dump(mode="json")
-```
-
-### Day 8 Non-Scope
-
-- Job-description API
-- Database persistence
-- Job-description history
-- Resume matching
-- ATS scoring
-- Resume optimization
-- Embeddings or FAISS
-- LangGraph orchestration
-
-Detailed documentation:
+Supported workflow statuses:
 
 ```text
-docs/job-description-parser.md
+pending
+normalizing
+baselining
+analyzing
+validating
+retrying
+completed
+completed_with_fallback
+failed
 ```
+
+### Workflow Nodes
+
+#### 1. Input Normalization Node
+
+The input normalization node:
+
+- Normalizes line endings
+- Removes unnecessary blank lines
+- Trims extra whitespace
+- Preserves meaningful job-description sections
+- Rejects descriptions that are too short for useful analysis
+
+A short invalid description is rejected before making a Groq API request.
+
+#### 2. Deterministic Baseline Node
+
+The original Day 8 parser runs first and produces baseline information such as:
+
+- Initial job title
+- Initial company name
+- Detected skills
+- Detected technologies
+- Responsibilities
+- Experience requirements
+- Education requirements
+- ATS keywords
+
+The deterministic result is provided to the AI agent as supporting evidence. It is not treated as the final intelligence output.
+
+#### 3. Groq AI Analysis Node
+
+LangChain sends the following information to the Groq Job Description Analyzer Agent:
+
+- Original normalized job description
+- Deterministic baseline result
+- Dedicated system prompt
+- Validation feedback from earlier attempts
+- Required Pydantic output schema
+
+The Groq model semantically understands the description and returns a structured `ParsedJobDescription` object.
+
+#### 4. Evidence Validation Node
+
+The validator checks the AI-generated result against the original job description.
+
+Validation includes:
+
+- Checking that meaningful information was returned
+- Verifying that the company name appears in the source text
+- Checking whether the job title is supported by source terms
+- Verifying required skills
+- Verifying preferred skills
+- Verifying technologies
+- Verifying ATS keywords
+- Checking responsibility alignment
+- Detecting unsupported or fabricated information
+
+Important unsupported fields, such as an invented company name, cause validation failure.
+
+Less critical uncertain fields are added as warnings for evidence review.
+
+#### 5. Conditional Retry Route
+
+When the agent output fails validation and retries remain, LangGraph sends the validation feedback back to the agent.
+
+```text
+Groq Agent Output
+        ↓
+Validation Failure
+        ↓
+Validation Errors Added to LangGraph State
+        ↓
+Agent Runs Again with Correction Instructions
+        ↓
+Corrected Structured Output
+```
+
+The workflow prevents infinite retries by enforcing a maximum attempt count.
+
+#### 6. Deterministic Fallback Route
+
+When Groq is unavailable, the API key is invalid, the request fails, or the AI output remains invalid after all retries, the workflow uses the original deterministic parser result.
+
+The final status becomes:
+
+```text
+completed_with_fallback
+```
+
+The output includes the warning:
+
+```text
+AI job-description analysis was unavailable or invalid.
+The deterministic parser result was used.
+```
+
+This ensures that the platform continues working even when the AI provider is temporarily unavailable.
+
+### Agent Guardrails
+
+The Job Description Analyzer Agent is instructed to:
+
+- Use only information supported by the source job description
+- Never invent a company name
+- Never invent a job title
+- Never invent required or preferred skills
+- Never invent technologies or tools
+- Never invent responsibilities
+- Never invent qualifications
+- Never invent education requirements
+- Never invent experience requirements
+- Never convert preferred requirements into required requirements
+- Preserve company names, job titles, technologies, degrees, numbers, and experience ranges accurately
+- Return empty values when information is unavailable
+- Correct mistakes using validation feedback
+- Return only structured output matching the required Pydantic schema
+
+### Existing Deterministic Day 8 Parser
+
+The original deterministic parser remains in the project as:
+
+- A preprocessing tool
+- A baseline generator
+- Supporting evidence for the AI agent
+- A validation reference
+- A controlled fallback
+- A regression-testing baseline
+
+The deterministic parser is no longer intended to be the main intelligence layer.
+
+### Main Agentic Files
+
+```text
+backend/app/agents/job_description_analyzer/__init__.py
+backend/app/agents/job_description_analyzer/agent.py
+backend/app/agents/job_description_analyzer/state.py
+backend/app/agents/job_description_analyzer/validator.py
+backend/app/prompts/job_description_analyzer.py
+backend/app/workflows/job_description_analyzer.py
+backend/tests/agents/test_job_description_analyzer_agent.py
+backend/tests/workflows/test_job_description_analyzer_workflow.py
+```
+
+### Existing Supporting Files
+
+```text
+backend/app/parsers/job_description.py
+backend/app/schemas/job_description_parser.py
+backend/tests/unit/test_job_description_parser.py
+backend/tests/unit/test_job_description_schema.py
+```
+
+### Groq Configuration
+
+The Job Description Analyzer Agent reuses the shared Groq configuration:
+
+```env
+LLM_PROVIDER=groq
+GROQ_API_KEY=your-private-groq-api-key
+GROQ_MODEL=llama-3.3-70b-versatile
+AGENT_TIMEOUT_SECONDS=60
+AGENT_MODEL_MAX_RETRIES=2
+```
+
+The real Groq API key is stored only inside the private `.env` file and must never be committed to GitHub.
+
+The public `.env.example` contains only placeholders.
+
+### Technology Stack
+
+- Python
+- FastAPI
+- LangChain
+- LangGraph
+- Groq API
+- ChatGroq
+- Pydantic structured output
+- Deterministic parsing tools
+- Evidence validation
+- Pytest
+- Ruff
+- MyPy
+
+### Testing
+
+Corrected Day 8 includes tests for:
+
+- Agent prompt-payload preparation
+- Anti-hallucination prompt rules
+- Fake company-name rejection
+- Successful AI workflow execution
+- Company extraction from natural recruiting language
+- Retry after invalid AI output
+- Controlled fallback after Groq failure
+- Short-input rejection
+- Existing deterministic parser regression
+- Existing Pydantic schema validation
+
+Automated tests use mocked LangChain runnables and do not make real Groq API calls.
+
+### Day 8 Status
+
+Completed:
+
+- LangChain Job Description Analyzer Agent
+- Dedicated job-description analyzer prompt
+- Groq structured-output integration
+- LangGraph workflow state
+- Input normalization node
+- Deterministic baseline node
+- Groq analysis node
+- Evidence-validation node
+- Conditional retry routing
+- Deterministic fallback routing
+- Workflow tests
+- Agent tests
+- Existing parser regression tests
+
+Future integration:
+
+- Add a production API or service entry point for the agent workflow
+- Persist analyzed job descriptions when job and application storage is introduced
+- Connect the structured result to the Resume Matching Agent
+- Include the analyzer inside the complete multi-agent LangGraph workflow
 
 ## Day 9 — Resume Matching Engine
 

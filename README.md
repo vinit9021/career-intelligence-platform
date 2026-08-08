@@ -1356,9 +1356,10 @@ backend/app/agents/resume_matching/
 backend/app/prompts/resume_matching.py
 backend/app/workflows/resume_matching.py
 backend/tests/agents/test_resume_matching_agent.py
-backend/tests/workflows/test_resume_matching_workflow.pyATS Optimization Agent
+backend/tests/workflows/test_resume_matching_workflow.py
+ATS Optimization Agent
 
-## Day 10 — ATS Optimization AI Agent
+## Day 9 — Resume Matching AI Agent
 
 Day 10 adds an ATS Optimization Agent using LangChain, LangGraph, Groq, Pydantic, and deterministic fallback logic.
 

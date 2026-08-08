@@ -1343,37 +1343,42 @@ Day 9 upgrades the deterministic matching engine into a hybrid AI-powered Resume
 - Technology and ATS keyword matching
 - Semantic requirement comparison
 - Responsibility alignment
-- Exact resume evidence validation
-- Match score calculation
-- Strength and weakness identification
+- Resume evidence validation
+- Hybrid match scoring
 - Retry handling for invalid AI output
 - Deterministic fallback when Groq is unavailable
 
 ### Main Files
 
-````text
+```text
 backend/app/agents/resume_matching/
 backend/app/prompts/resume_matching.py
 backend/app/workflows/resume_matching.py
 backend/tests/agents/test_resume_matching_agent.py
 backend/tests/workflows/test_resume_matching_workflow.py
-ATS Optimization Agent
+```
 
-## Day 9 — Resume Matching AI Agent
+### Status
+
+- Resume Matching AI Agent implemented
+- Semantic evidence validation added
+- Hybrid deterministic + AI scoring added
+- LangGraph retry and fallback added
+- 21 focused tests passed
+
+## Day 10 — ATS Optimization AI Agent
 
 Day 10 adds an ATS Optimization Agent using LangChain, LangGraph, Groq, Pydantic, and deterministic fallback logic.
 
 ### Features
 
 - ATS baseline score
-- Keyword coverage analysis
-- Missing keyword detection
+- Keyword coverage and missing keyword detection
 - Safe and conditional keyword recommendations
 - Summary improvement suggestions
 - Experience and project bullet rewrites
-- Section-wise recommendations
-- Prioritized ATS action plan
-- Unsupported skill and fabricated metric validation
+- Section-wise ATS recommendations
+- Fabricated skill and metric validation
 - Retry handling and deterministic fallback
 
 ### Main Files
@@ -1386,4 +1391,12 @@ backend/app/workflows/ats_optimization.py
 backend/tests/agents/test_ats_optimization_agent.py
 backend/tests/unit/test_ats_optimizer.py
 backend/tests/workflows/test_ats_optimization_workflow.py
-````
+```
+
+### Status
+
+- ATS Optimization AI Agent implemented
+- Groq structured output integrated
+- Evidence validation added
+- LangGraph retry and fallback added
+- Day 10 tests added

@@ -1400,3 +1400,29 @@ backend/tests/workflows/test_ats_optimization_workflow.py
 - Evidence validation added
 - LangGraph retry and fallback added
 - Day 10 tests added
+
+## Day 11 — Resume Version Manager
+
+Day 11 adds a Resume Version Manager to maintain multiple resume variants and track their complete version history.
+
+### Features
+
+- Backend, AI, ML, and Full-stack resume variants
+- Automatic version numbering
+- Active resume version management
+- Resume version history
+- ATS score and optimization snapshot storage
+- Track which resume version was submitted for an application
+- PostgreSQL persistence with Alembic migration
+- LangGraph-based version management workflow
+
+### Main Files
+
+```text
+backend/app/models/resume_version.py
+backend/app/schemas/resume_version.py
+backend/app/repositories/resume_versions.py
+backend/app/services/resume_versions.py
+backend/app/agents/resume_version_manager/
+backend/app/workflows/resume_version_manager.py
+```

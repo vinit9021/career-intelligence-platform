@@ -1479,3 +1479,26 @@ backend/tests/agents/test_skill_gap_agent.py
 backend/tests/unit/test_skill_gap_analyzer.py
 backend/tests/workflows/test_skill_gap_workflow.py
 ```
+
+## Day 15 — Central LangGraph Orchestration
+
+Day 15 adds the central LangGraph orchestration layer to coordinate the existing Career Intelligence AI agents.
+
+### Features
+
+- Shared multi-agent workflow state
+- Central agent registry
+- Conditional agent routing
+- Configurable agent execution order
+- Retry handling for failed agents
+- Deterministic fallback routing
+- LangGraph checkpointing
+- Workflow error and warning tracking
+- Resume Version Manager integration support
+
+### Main Files
+
+```text
+backend/app/orchestration/
+backend/tests/orchestration/
+```

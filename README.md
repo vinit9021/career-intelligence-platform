@@ -1452,3 +1452,30 @@ backend/tests/agents/test_cover_letter_agent.py
 backend/tests/unit/test_cover_letter_generator.py
 backend/tests/workflows/test_cover_letter_workflow.py
 ```
+
+## Day 13 — Skill Gap AI Agent
+
+Day 13 adds a Skill Gap Agent using LangChain, LangGraph, Groq, and deterministic skill-gap analysis.
+
+### Features
+
+- Required and preferred skill-gap detection
+- Technology gap identification
+- Gap priority classification
+- Personalized learning roadmap
+- Practical exercises and mini-project recommendations
+- False skill-gap validation
+- LangGraph retry handling
+- Deterministic fallback when Groq is unavailable
+
+### Main Files
+
+```text
+backend/app/agents/skill_gap/
+backend/app/skill_gap/
+backend/app/prompts/skill_gap.py
+backend/app/workflows/skill_gap.py
+backend/tests/agents/test_skill_gap_agent.py
+backend/tests/unit/test_skill_gap_analyzer.py
+backend/tests/workflows/test_skill_gap_workflow.py
+```

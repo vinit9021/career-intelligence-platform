@@ -1426,3 +1426,29 @@ backend/app/services/resume_versions.py
 backend/app/agents/resume_version_manager/
 backend/app/workflows/resume_version_manager.py
 ```
+
+## Day 12 — Cover Letter AI Agent
+
+Day 12 adds a personalized Cover Letter Agent using LangChain, LangGraph, Groq, and evidence-based validation.
+
+### Features
+
+- Personalized role and company-specific cover letters
+- Resume and job-description based generation
+- Resume evidence validation
+- Unsupported skill and fabricated metric detection
+- Configurable tone and word limit
+- Retry handling for invalid AI output
+- Deterministic fallback when Groq is unavailable
+
+### Main Files
+
+```text
+backend/app/agents/cover_letter/
+backend/app/cover_letters/
+backend/app/prompts/cover_letter.py
+backend/app/workflows/cover_letter.py
+backend/tests/agents/test_cover_letter_agent.py
+backend/tests/unit/test_cover_letter_generator.py
+backend/tests/workflows/test_cover_letter_workflow.py
+```

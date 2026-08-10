@@ -1549,3 +1549,26 @@ Day 17 adds centralized prompt management for the Career Intelligence AI agents.
 backend/app/prompts/management/
 backend/tests/prompts/
 ```
+
+## Day 18 — Memory Management
+
+Day 18 adds centralized memory management for the Career Intelligence AI agents.
+
+### Features
+
+- Short-term workflow memory
+- Long-term career memory
+- User preference and career-goal storage
+- Resume and application context memory
+- Agent insight memory
+- Memory read, write, update, delete, and session-clear operations
+- Memory policy for blocking credential-like sensitive data
+- Storage abstraction for future PostgreSQL/Redis backends
+- Memory-aware LangGraph orchestration
+
+### Main Files
+
+```text
+backend/app/memory/
+backend/tests/memory/
+```

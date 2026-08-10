@@ -1,4 +1,4 @@
-"""Central LangGraph workflow for career intelligence."""
+"""Central LangGraph workflow for Career Intelligence."""
 
 from __future__ import annotations
 
@@ -10,13 +10,14 @@ from langchain_core.runnables import RunnableLambda
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.graph import END, START, StateGraph
 
-from app.orchestration.registry import (
-    AgentRegistry,
-)
+from app.orchestration.registry import AgentRegistry
 from app.orchestration.router import (
     first_enabled_node,
     next_enabled_node,
     normalize_route,
+)
+from app.orchestration.serialization import (
+    to_checkpoint_value,
 )
 from app.orchestration.state import (
     PIPELINE_ORDER,
@@ -33,6 +34,14 @@ def _deduplicate(
     values: list[str],
 ) -> list[str]:
     return list(dict.fromkeys(values))
+
+
+def _request_from_state(
+    state: CareerWorkflowState,
+) -> CareerWorkflowRequest:
+    """Rebuild request model locally from safe state."""
+
+    return CareerWorkflowRequest.model_validate(state["request"])
 
 
 def _route_map() -> dict[Hashable, str]:
@@ -67,7 +76,7 @@ def _store_success(
         )
     )
 
-    outputs[node] = result.output
+    outputs[node] = to_checkpoint_value(result.output)
 
     execution_order = [
         *state.get(
@@ -97,7 +106,7 @@ def _store_success(
         ]
     )
 
-    request = state["request"]
+    request = _request_from_state(state)
 
     next_node = next_enabled_node(
         node,
@@ -138,12 +147,20 @@ def _build_agent_node(
             )
 
         if result.status == "completed":
-            return _store_success(
-                state,
-                node=name,
-                result=result,
-                fallback_used=False,
-            )
+            try:
+                return _store_success(
+                    state,
+                    node=name,
+                    result=result,
+                    fallback_used=False,
+                )
+
+            except Exception as exc:
+                result = AgentNodeResult(
+                    status="failed",
+                    error=str(exc),
+                    retryable=False,
+                )
 
         message = result.error or (f"Agent node failed without an error message: {name}")
 
@@ -226,12 +243,12 @@ def build_career_workflow(
     *,
     use_checkpointer: bool = True,
 ) -> Any:
-    """Build the central multi-agent LangGraph."""
+    """Build central multi-agent LangGraph."""
 
     async def initialize(
         state: CareerWorkflowState,
     ) -> dict[str, Any]:
-        request = state["request"]
+        request = _request_from_state(state)
 
         errors = registry.validate_nodes(request.enabled_nodes)
 
@@ -316,12 +333,20 @@ def build_career_workflow(
             )
 
         if result.status == "completed":
-            return _store_success(
-                state,
-                node=failed_node,
-                result=result,
-                fallback_used=True,
-            )
+            try:
+                return _store_success(
+                    state,
+                    node=failed_node,
+                    result=result,
+                    fallback_used=True,
+                )
+
+            except Exception as exc:
+                result = AgentNodeResult(
+                    status="failed",
+                    error=str(exc),
+                    retryable=False,
+                )
 
         message = result.error or (f"Fallback executor failed for node: {failed_node}")
 
@@ -450,9 +475,22 @@ async def run_career_workflow(
 
     graph = build_career_workflow(registry)
 
+    safe_request = to_checkpoint_value(request)
+
+    if not isinstance(
+        safe_request,
+        dict,
+    ):
+        raise TypeError("Career workflow request did not serialize to a dictionary.")
+
     initial_state: CareerWorkflowState = {
-        "request": request,
-        "context": dict(request.initial_context),
+        "request": safe_request,
+        "context": dict(
+            safe_request.get(
+                "initial_context",
+                {},
+            )
+        ),
         "outputs": {},
         "execution_order": [],
         "fallback_nodes": [],

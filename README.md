@@ -1502,3 +1502,28 @@ Day 15 adds the central LangGraph orchestration layer to coordinate the existing
 backend/app/orchestration/
 backend/tests/orchestration/
 ```
+
+## Day 16 — Agent Orchestration
+
+Day 16 connects the real Career Intelligence agents to the central LangGraph workflow created on Day 15.
+
+### Features
+
+- Real agent workflow registration
+- Resume Parser → JD Analyzer → Matching pipeline
+- ATS Optimization, Skill Gap, and Cover Letter orchestration
+- Shared output handoff between agents
+- Dependency validation
+- Retry and fallback propagation
+- Checkpoint-safe workflow serialization
+- Optional Resume Version Manager integration
+
+### Main Files
+
+```text
+backend/app/orchestration/real_agents.py
+backend/app/orchestration/production.py
+backend/app/orchestration/serialization.py
+backend/app/orchestration/graph.py
+backend/tests/orchestration/
+```

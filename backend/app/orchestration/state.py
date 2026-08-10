@@ -1,4 +1,4 @@
-"""Shared state for the central LangGraph workflow."""
+"""Shared state for central LangGraph orchestration."""
 
 from __future__ import annotations
 
@@ -73,7 +73,7 @@ class AgentNodeResult(BaseModel):
 
 
 class CareerWorkflowRequest(BaseModel):
-    """Input for the central career workflow."""
+    """Public input for the central workflow."""
 
     enabled_nodes: list[AgentNodeName] = Field(default_factory=lambda: list(CORE_PIPELINE_ORDER))
 
@@ -84,9 +84,12 @@ class CareerWorkflowState(
     TypedDict,
     total=False,
 ):
-    """Shared LangGraph execution state."""
+    """Checkpoint-safe LangGraph state."""
 
-    request: CareerWorkflowRequest
+    # Important:
+    # Stored as dictionary rather than BaseModel because
+    # LangGraph checkpoints serialize workflow state.
+    request: dict[str, Any]
 
     context: dict[str, Any]
 
@@ -116,7 +119,7 @@ class CareerWorkflowState(
 
 
 class CareerWorkflowResult(BaseModel):
-    """Final central workflow result."""
+    """Final orchestration result."""
 
     status: WorkflowStatus
 

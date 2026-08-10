@@ -1596,3 +1596,29 @@ Day 19 adds a centralized tool-calling layer for the Career Intelligence AI agen
 backend/app/tool_calling/
 backend/tests/tool_calling/
 ```
+
+## Day 20 — Workflow Execution
+
+Day 20 adds the end-to-end workflow execution layer for the Career Intelligence multi-agent system.
+
+### Features
+
+- Central workflow execution service
+- Full multi-agent pipeline execution
+- Configurable agent execution
+- Workflow execution IDs and lifecycle tracking
+- Per-agent step status tracking
+- Retry and fallback tracking
+- Prompt version and checksum metadata
+- Agent tool availability metadata
+- Short-term memory integration
+- Workflow execution history
+- Structured final workflow results
+- Safe handling of partial and failed workflows
+
+### Main Files
+
+```text
+backend/app/workflow_execution/
+backend/tests/workflow_execution/
+```

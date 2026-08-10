@@ -1572,3 +1572,27 @@ Day 18 adds centralized memory management for the Career Intelligence AI agents.
 backend/app/memory/
 backend/tests/memory/
 ```
+
+## Day 19 — Tool Calling
+
+Day 19 adds a centralized tool-calling layer for the Career Intelligence AI agents.
+
+### Features
+
+- Central tool registry
+- Structured tool-call requests and results
+- Pydantic argument validation
+- Agent-specific tool permissions
+- Tool execution timeout handling
+- Tool failure and invalid-call handling
+- Tool execution audit tracking
+- LangChain tool adapters
+- Built-in evidence lookup and keyword overlap tools
+- Safe structured tool output serialization
+
+### Main Files
+
+```text
+backend/app/tool_calling/
+backend/tests/tool_calling/
+```

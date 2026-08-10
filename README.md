@@ -1527,3 +1527,25 @@ backend/app/orchestration/serialization.py
 backend/app/orchestration/graph.py
 backend/tests/orchestration/
 ```
+
+## Day 17 — Prompt Management
+
+Day 17 adds centralized prompt management for the Career Intelligence AI agents.
+
+### Features
+
+- Central prompt registry
+- Prompt versioning
+- Prompt metadata and checksums
+- Shared AI guardrails
+- Prompt variable validation
+- LangChain prompt construction
+- Version override support
+- Existing agent prompt discovery
+
+### Main Files
+
+```text
+backend/app/prompts/management/
+backend/tests/prompts/
+```

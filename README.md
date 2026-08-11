@@ -1622,3 +1622,24 @@ Day 20 adds the end-to-end workflow execution layer for the Career Intelligence 
 backend/app/workflow_execution/
 backend/tests/workflow_execution/
 ```
+
+## Day 21 — Testing
+
+Day 21 adds system-level and regression testing for the complete Career Intelligence multi-agent backend.
+
+### Features
+
+- End-to-end multi-agent pipeline testing
+- Workflow retry and failure testing
+- Agent dependency validation
+- Warning and serialization regression tests
+- Memory user and session isolation tests
+- Tool permission and execution tests
+- Prompt, tool, and workflow contract validation
+- Core LangGraph pipeline order protection
+
+### Main Files
+
+```text
+backend/tests/system/
+```

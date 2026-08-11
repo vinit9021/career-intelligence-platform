@@ -63,6 +63,8 @@ class AuthService:
     async def register(
         self,
         payload: RegisterRequest,
+        *,
+        is_verified: bool = False,
     ) -> AuthResult:
         email = str(payload.email).lower()
 
@@ -75,6 +77,7 @@ class AuthService:
             email=email,
             password_hash=hash_password(payload.password),
             full_name=payload.full_name,
+            is_verified=is_verified,
         )
 
         self._session.add(user)

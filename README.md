@@ -1643,3 +1643,66 @@ Day 21 adds system-level and regression testing for the complete Career Intellig
 ```text
 backend/tests/system/
 ```
+
+## Day 22 — Dashboard Layout & Authentication
+
+### Objective
+
+Build the main Career Intelligence dashboard and complete the user authentication flow.
+
+### Implemented
+
+- Responsive dashboard layout
+- Sidebar, top navigation, and mobile navigation
+- Dashboard overview cards and future application/analytics placeholders
+- Login and signup interface
+- Strong password validation
+- OTP-based email verification through Gmail SMTP
+- OTP expiry, resend limits, and verification attempt limits
+- Verified account creation
+- Signup → Login → Dashboard flow
+- JWT-based authentication
+- Protected dashboard route
+- Logout functionality
+- Logged-in user information in dashboard
+- Invalid and expired session cleanup
+
+### Authentication Flow
+
+Sign Up → Enter Details → OTP sent to Email → Verify OTP → Account Created → Sign In → JWT Authentication → Dashboard
+
+### Main Backend Files
+
+- backend/app/api/v1/signup.py
+- backend/app/core/email_config.py
+- backend/app/schemas/signup.py
+- backend/app/services/signup_email.py
+- backend/app/services/signup_otp.py
+- backend/tests/unit/test_signup_email.py
+- backend/tests/unit/test_signup_otp_service.py
+
+### Main Frontend Files
+
+- frontend/src/app/dashboard/
+- frontend/src/components/auth/
+- frontend/src/components/dashboard/
+- frontend/src/lib/auth.ts
+- frontend/src/lib/auth-storage.ts
+
+### Security
+
+- OTPs are generated and verified by the backend.
+- OTPs expire and have limited verification attempts.
+- Gmail SMTP credentials remain only in backend/.env.
+- Secrets are never committed to GitHub.
+- Expired or invalid authentication sessions are automatically removed.
+
+### Status
+
+✅ Dashboard layout completed  
+✅ Login and signup completed  
+✅ Gmail OTP verification completed  
+✅ JWT authentication completed  
+✅ Protected dashboard completed  
+✅ Logout and session expiry handling completed  
+✅ Day 22 completed

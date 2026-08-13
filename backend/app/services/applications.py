@@ -1,0 +1,164 @@
+from typing import Any
+from uuid import UUID
+
+from sqlalchemy.ext.asyncio import (
+    AsyncSession,
+)
+
+from app.models import (
+    Application,
+    User,
+)
+from app.repositories.applications import (
+    ApplicationRepository,
+)
+from app.schemas.application import (
+    ApplicationCreateRequest,
+    ApplicationSortField,
+    ApplicationStatus,
+    ApplicationUpdateRequest,
+    SortOrder,
+)
+
+
+class ApplicationNotFoundError(LookupError):
+    pass
+
+
+class ApplicationPersistenceError(RuntimeError):
+    pass
+
+
+class ApplicationService:
+    def __init__(
+        self,
+        *,
+        session: AsyncSession,
+        repository: (ApplicationRepository | None) = None,
+    ) -> None:
+        self._session = session
+
+        self._repository = repository if repository is not None else ApplicationRepository(session)
+
+    async def create(
+        self,
+        *,
+        user: User,
+        payload: (ApplicationCreateRequest),
+        source: str = "manual",
+        external_id: str | None = None,
+    ) -> Application:
+        data: dict[str, Any] = payload.model_dump()
+
+        job_url = data.get("job_url")
+
+        if job_url is not None:
+            data["job_url"] = str(job_url)
+
+        application = Application(
+            user_id=user.id,
+            source=source,
+            external_id=external_id,
+            **data,
+        )
+
+        self._repository.add(application)
+
+        try:
+            await self._session.commit()
+
+            await self._session.refresh(application)
+        except Exception as exc:
+            await self._session.rollback()
+
+            raise (ApplicationPersistenceError("The application could not be saved.")) from exc
+
+        return application
+
+    async def list_for_user(
+        self,
+        *,
+        user: User,
+        search: str | None,
+        status: (ApplicationStatus | None),
+        sort_by: (ApplicationSortField),
+        sort_order: SortOrder,
+        page: int,
+        page_size: int,
+    ) -> tuple[
+        list[Application],
+        int,
+    ]:
+        return await self._repository.list_for_user(
+            user_id=user.id,
+            search=search,
+            status=status,
+            sort_by=sort_by,
+            sort_order=(sort_order),
+            page=page,
+            page_size=page_size,
+        )
+
+    async def update(
+        self,
+        *,
+        user: User,
+        application_id: UUID,
+        payload: (ApplicationUpdateRequest),
+    ) -> Application:
+        application = await self._repository.get_by_id_for_user(
+            application_id=(application_id),
+            user_id=user.id,
+        )
+
+        if application is None:
+            raise (ApplicationNotFoundError("Application not found."))
+
+        data: dict[str, Any] = payload.model_dump(exclude_unset=True)
+
+        if "job_url" in data and data["job_url"] is not None:
+            data["job_url"] = str(data["job_url"])
+
+        for (
+            field_name,
+            value,
+        ) in data.items():
+            setattr(
+                application,
+                field_name,
+                value,
+            )
+
+        try:
+            await self._session.commit()
+
+            await self._session.refresh(application)
+        except Exception as exc:
+            await self._session.rollback()
+
+            raise (ApplicationPersistenceError("The application could not be updated.")) from exc
+
+        return application
+
+    async def delete(
+        self,
+        *,
+        user: User,
+        application_id: UUID,
+    ) -> None:
+        application = await self._repository.get_by_id_for_user(
+            application_id=(application_id),
+            user_id=user.id,
+        )
+
+        if application is None:
+            raise (ApplicationNotFoundError("Application not found."))
+
+        await self._repository.delete(application)
+
+        try:
+            await self._session.commit()
+        except Exception as exc:
+            await self._session.rollback()
+
+            raise (ApplicationPersistenceError("The application could not be deleted.")) from exc

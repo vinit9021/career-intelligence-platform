@@ -1706,3 +1706,55 @@ Sign Up → Enter Details → OTP sent to Email → Verify OTP → Account Creat
 ✅ Protected dashboard completed  
 ✅ Logout and session expiry handling completed  
 ✅ Day 22 completed
+
+## Day 23 — Applications Page
+
+### Objective
+
+Build the application tracking system and connect the frontend dashboard to PostgreSQL-backed application data.
+
+### Implemented
+
+- Applications page
+- Manual application creation
+- Company, role, location, job URL, applied date, status, and notes
+- Application statuses: Applied, Online Assessment, Interview, Offer, Rejected, Withdrawn
+- Search, filter, and sorting
+- Quick status updates
+- Application deletion
+- Pagination support
+- PostgreSQL Application model
+- Repository and service layers
+- Authenticated application APIs
+- User-level data isolation
+- Responsive Applications UI
+- Applications navigation enabled in dashboard
+- `source` and `external_id` fields for future Gmail automation
+
+### Application Sources
+
+- `manual` — added by the user
+- `gmail` — reserved for automatic Gmail detection
+- `integration` — reserved for future integrations
+
+### Main Files
+
+- `backend/app/models/application.py`
+- `backend/app/schemas/application.py`
+- `backend/app/repositories/applications.py`
+- `backend/app/services/applications.py`
+- `backend/app/api/v1/applications.py`
+- `backend/migrations/versions/20260813_0004_create_applications.py`
+- `frontend/src/app/applications/`
+- `frontend/src/components/applications/`
+- `frontend/src/lib/applications.ts`
+
+### Status
+
+✅ Applications backend implemented  
+✅ Applications UI implemented  
+✅ Manual tracking implemented  
+✅ Search/filter/sort implemented  
+✅ User isolation implemented  
+✅ Gmail-ready application source architecture implemented  
+✅ Day 23 completed

@@ -13,6 +13,7 @@ from sqlalchemy.ext.asyncio import (
 from app.core.config import get_settings
 from app.db.base import Base
 from app.models import (
+    Application,
     Profile,
     RefreshToken,
     Resume,
@@ -35,6 +36,7 @@ config.set_main_option(
 )
 
 REGISTERED_MODELS = (
+    Application,
     User,
     Profile,
     RefreshToken,

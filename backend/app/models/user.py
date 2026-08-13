@@ -22,6 +22,7 @@ from sqlalchemy.orm import (
 from app.db.base import Base
 
 if TYPE_CHECKING:
+    from app.models.application import Application
     from app.models.profile import Profile
     from app.models.refresh_token import RefreshToken
     from app.models.resume import Resume
@@ -92,6 +93,12 @@ class User(Base):
         passive_deletes=True,
         single_parent=True,
         uselist=False,
+    )
+
+    applications: Mapped[list[Application]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
     )
 
     resumes: Mapped[list[Resume]] = relationship(

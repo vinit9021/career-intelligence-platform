@@ -1,3 +1,4 @@
+from app.api.dependencies.applications import ApplicationServiceDependency, get_application_service
 from app.api.dependencies.auth import CurrentUser, get_auth_service, get_current_user
 from app.api.dependencies.resumes import (
     ResumeParsingServiceDependency,
@@ -10,10 +11,12 @@ from app.api.dependencies.resumes import (
 from app.api.dependencies.users import UserServiceDependency, get_user_service
 
 __all__ = [
+    "ApplicationServiceDependency",
     "CurrentUser",
     "ResumeParsingServiceDependency",
     "ResumeServiceDependency",
     "UserServiceDependency",
+    "get_application_service",
     "get_auth_service",
     "get_current_user",
     "get_parser_registry",

@@ -21,7 +21,7 @@ const navigation = [
     label: "Applications",
     href: "/applications",
     icon: ApplicationsIcon,
-    enabled: false,
+    enabled: true,
   },
   {
     label: "Analytics",

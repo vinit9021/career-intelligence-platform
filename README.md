@@ -1758,3 +1758,42 @@ Build the application tracking system and connect the frontend dashboard to Post
 ✅ User isolation implemented  
 ✅ Gmail-ready application source architecture implemented  
 ✅ Day 23 completed
+
+## Day 24 — Application Details Page
+
+### Objective
+
+Build a dedicated page for viewing and managing individual job applications.
+
+### Implemented
+
+- Dynamic `/applications/[id]` route
+- Complete application details view
+- Company, role, status, location, applied date, source, job URL, and notes
+- Edit application details
+- Update application status
+- Delete application
+- Back navigation to Applications
+- Authenticated single-application API
+- User-level application ownership protection
+- Created and updated timestamps
+- Timeline placeholder prepared for Day 25
+- Reusable SVG back-arrow UI
+
+### Main Files
+
+- `backend/app/services/applications.py`
+- `backend/app/api/v1/applications.py`
+- `backend/tests/unit/test_application_details_service.py`
+- `frontend/src/app/applications/[id]/page.tsx`
+- `frontend/src/components/applications/application-details-page.tsx`
+- `frontend/src/lib/applications.ts`
+
+### Status
+
+✅ Application Details page completed  
+✅ View, edit, update, and delete supported  
+✅ Authenticated application retrieval completed  
+✅ User isolation maintained  
+✅ Day 25 Timeline section prepared  
+✅ Day 24 completed

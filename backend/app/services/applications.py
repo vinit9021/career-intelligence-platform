@@ -99,6 +99,27 @@ class ApplicationService:
             page_size=page_size,
         )
 
+    async def get(
+        self,
+        *,
+        user: User,
+        application_id: UUID,
+    ) -> Application:
+        application = (
+            await self._repository
+            .get_by_id_for_user(
+                application_id=application_id,
+                user_id=user.id,
+            )
+        )
+
+        if application is None:
+            raise ApplicationNotFoundError(
+                "Application not found."
+            )
+
+        return application
+
     async def update(
         self,
         *,

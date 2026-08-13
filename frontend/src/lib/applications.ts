@@ -141,6 +141,10 @@ export async function createApplication(payload: ApplicationCreateInput): Promis
   });
 }
 
+export async function getApplication(applicationId: string): Promise<Application> {
+  return authenticatedRequest<Application>(`/applications/${applicationId}`);
+}
+
 export async function updateApplication(
   applicationId: string,
   payload: Partial<ApplicationCreateInput>,

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { ApplicationForm } from "@/components/applications/application-form";
@@ -405,14 +406,23 @@ export function ApplicationsPage() {
                       </td>
 
                       <td className="px-5 py-4 text-right">
-                        <button
-                          type="button"
-                          disabled={updatingId === application.id}
-                          onClick={() => void handleDelete(application)}
-                          className="rounded-lg px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50 disabled:opacity-50"
-                        >
-                          Delete
-                        </button>
+                        <div className="flex justify-end gap-1">
+                          <Link
+                            href={`/applications/${application.id}`}
+                            className="rounded-lg px-3 py-2 text-xs font-semibold text-indigo-600 transition hover:bg-indigo-50"
+                          >
+                            View details
+                          </Link>
+
+                          <button
+                            type="button"
+                            disabled={updatingId === application.id}
+                            onClick={() => void handleDelete(application)}
+                            className="rounded-lg px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50 disabled:opacity-50"
+                          >
+                            Delete
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}

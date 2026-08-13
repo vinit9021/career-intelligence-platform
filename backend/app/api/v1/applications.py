@@ -113,6 +113,31 @@ async def list_applications(
     )
 
 
+@router.get(
+    "/{application_id}",
+    response_model=ApplicationResponse,
+)
+async def get_application(
+    application_id: UUID,
+    current_user: CurrentUser,
+    service: ApplicationServiceDependency,
+) -> ApplicationResponse:
+    try:
+        application = await service.get(
+            user=current_user,
+            application_id=application_id,
+        )
+    except ApplicationNotFoundError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(exc),
+        ) from exc
+
+    return ApplicationResponse.model_validate(
+        application
+    )
+
+
 @router.patch(
     "/{application_id}",
     response_model=(ApplicationResponse),

@@ -4,7 +4,12 @@ import type { FormEvent, ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { ArrowRightIcon, ResumeIcon, TargetIcon } from "@/components/dashboard/icons";
+import {
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  ResumeIcon,
+  TargetIcon,
+} from "@/components/dashboard/icons";
 import { login, requestSignupOtp, verifySignupOtp } from "@/lib/auth";
 import { hasAuthSession, saveAuthSession } from "@/lib/auth-storage";
 
@@ -475,9 +480,10 @@ export function AuthPage() {
                     setSignupStage("details");
                     setError("");
                   }}
-                  className="text-sm font-semibold text-slate-500 hover:text-indigo-600"
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-indigo-600"
                 >
-                  ? Change account details
+                  <ArrowLeftIcon className="size-4" />
+                  Change account details
                 </button>
 
                 <div>

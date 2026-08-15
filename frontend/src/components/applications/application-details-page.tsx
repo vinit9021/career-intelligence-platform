@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ApplicationTimeline } from "@/components/applications/application-timeline";
 import { useRouter } from "next/navigation";
 import type { FormEvent } from "react";
 import { useEffect, useState } from "react";
@@ -652,28 +653,8 @@ export function ApplicationDetailsPage({ applicationId }: ApplicationDetailsPage
         </div>
       )}
 
-      <section className="mt-6 rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div className="border-b border-slate-100 px-6 py-5">
-          <h2 className="text-base font-semibold text-slate-950">Application Timeline</h2>
-
-          <p className="mt-1 text-sm text-slate-500">
-            Status changes, assessments, interviews, emails and other application events will appear
-            here.
-          </p>
-        </div>
-
-        <div className="flex min-h-44 flex-col items-center justify-center px-6 py-8 text-center">
-          <div className="flex size-12 items-center justify-center rounded-2xl bg-slate-50 text-slate-500 ring-1 ring-slate-200">
-            <CalendarIcon className="size-5" />
-          </div>
-
-          <p className="mt-4 text-sm font-semibold text-slate-900">No timeline events yet</p>
-
-          <p className="mt-1 max-w-md text-sm leading-6 text-slate-500">
-            Application activity will be displayed chronologically in this section.
-          </p>
-        </div>
-      </section>
+      
+      <ApplicationTimeline key={application.updated_at} applicationId={application.id} />
     </div>
   );
 }

@@ -160,3 +160,88 @@ export async function deleteApplication(applicationId: string): Promise<void> {
     method: "DELETE",
   });
 }
+
+export type TimelineEventType =
+  | "application_submitted"
+  | "status_changed"
+  | "online_assessment_received"
+  | "online_assessment_completed"
+  | "interview_scheduled"
+  | "interview_completed"
+  | "offer_received"
+  | "rejected"
+  | "withdrawn"
+  | "note";
+
+export type TimelineEventSource = "manual" | "system" | "gmail" | "integration";
+
+export interface ApplicationTimelineEvent {
+  id: string;
+  application_id: string;
+  event_type: TimelineEventType;
+  title: string;
+  description: string | null;
+  related_status: ApplicationStatus | null;
+  source: TimelineEventSource;
+  external_id: string | null;
+  event_at: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TimelineEventCreateInput {
+  event_type: TimelineEventType;
+  title: string;
+  description?: string | null;
+  related_status?: ApplicationStatus | null;
+  event_at: string;
+}
+
+export interface TimelineEventUpdateInput {
+  event_type?: TimelineEventType;
+  title?: string;
+  description?: string | null;
+  related_status?: ApplicationStatus | null;
+  event_at?: string;
+}
+
+export async function listApplicationTimeline(
+  applicationId: string,
+): Promise<ApplicationTimelineEvent[]> {
+  return authenticatedRequest<ApplicationTimelineEvent[]>(
+    `/applications/${applicationId}/timeline?order=asc`,
+  );
+}
+
+export async function createApplicationTimelineEvent(
+  applicationId: string,
+  payload: TimelineEventCreateInput,
+): Promise<ApplicationTimelineEvent> {
+  return authenticatedRequest<ApplicationTimelineEvent>(`/applications/${applicationId}/timeline`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function updateApplicationTimelineEvent(
+  applicationId: string,
+  eventId: string,
+  payload: TimelineEventUpdateInput,
+): Promise<ApplicationTimelineEvent> {
+  return authenticatedRequest<ApplicationTimelineEvent>(
+    `/applications/${applicationId}/timeline/${eventId}`,
+    {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    },
+  );
+}
+
+export async function deleteApplicationTimelineEvent(
+  applicationId: string,
+  eventId: string,
+): Promise<void> {
+  await authenticatedRequest<void>(`/applications/${applicationId}/timeline/${eventId}`, {
+    method: "DELETE",
+  });
+}

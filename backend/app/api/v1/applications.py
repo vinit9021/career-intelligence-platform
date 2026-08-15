@@ -12,6 +12,9 @@ from fastapi import (
 from app.api.dependencies import (
     CurrentUser,
 )
+from app.api.dependencies.application_timeline import (
+    ApplicationTimelineServiceDependency,
+)
 from app.api.dependencies.applications import (
     ApplicationServiceDependency,
 )
@@ -23,6 +26,17 @@ from app.schemas.application import (
     ApplicationStatus,
     ApplicationUpdateRequest,
     SortOrder,
+)
+from app.schemas.application_timeline import (
+    ApplicationTimelineCreateRequest,
+    ApplicationTimelineResponse,
+    ApplicationTimelineUpdateRequest,
+    TimelineSortOrder,
+)
+from app.services.application_timeline import (
+    TimelineApplicationNotFoundError,
+    TimelineEventNotFoundError,
+    TimelinePersistenceError,
 )
 from app.services.applications import (
     ApplicationNotFoundError,
@@ -133,9 +147,7 @@ async def get_application(
             detail=str(exc),
         ) from exc
 
-    return ApplicationResponse.model_validate(
-        application
-    )
+    return ApplicationResponse.model_validate(application)
 
 
 @router.patch(
@@ -188,6 +200,137 @@ async def delete_application(
             detail=str(exc),
         ) from exc
     except ApplicationPersistenceError as exc:
+        raise HTTPException(
+            status_code=(status.HTTP_500_INTERNAL_SERVER_ERROR),
+            detail=str(exc),
+        ) from exc
+
+    return Response(status_code=(status.HTTP_204_NO_CONTENT))
+
+
+# DAY25_TIMELINE_ROUTES
+
+
+@router.get(
+    "/{application_id}/timeline",
+    response_model=list[ApplicationTimelineResponse],
+)
+async def list_application_timeline(
+    application_id: UUID,
+    current_user: CurrentUser,
+    service: (ApplicationTimelineServiceDependency),
+    order: Annotated[
+        TimelineSortOrder,
+        Query(),
+    ] = "asc",
+) -> list[ApplicationTimelineResponse]:
+    try:
+        events = await service.list_events(
+            application_id=application_id,
+            user=current_user,
+            order=order,
+        )
+    except TimelineApplicationNotFoundError as exc:
+        raise HTTPException(
+            status_code=(status.HTTP_404_NOT_FOUND),
+            detail=str(exc),
+        ) from exc
+
+    return [ApplicationTimelineResponse.model_validate(event) for event in events]
+
+
+@router.post(
+    "/{application_id}/timeline",
+    response_model=(ApplicationTimelineResponse),
+    status_code=(status.HTTP_201_CREATED),
+)
+async def create_application_timeline_event(
+    application_id: UUID,
+    payload: (ApplicationTimelineCreateRequest),
+    current_user: CurrentUser,
+    service: (ApplicationTimelineServiceDependency),
+) -> ApplicationTimelineResponse:
+    try:
+        event = await service.create(
+            application_id=application_id,
+            user=current_user,
+            payload=payload,
+            source="manual",
+        )
+    except TimelineApplicationNotFoundError as exc:
+        raise HTTPException(
+            status_code=(status.HTTP_404_NOT_FOUND),
+            detail=str(exc),
+        ) from exc
+    except TimelinePersistenceError as exc:
+        raise HTTPException(
+            status_code=(status.HTTP_500_INTERNAL_SERVER_ERROR),
+            detail=str(exc),
+        ) from exc
+
+    return ApplicationTimelineResponse.model_validate(event)
+
+
+@router.patch(
+    "/{application_id}/timeline/{event_id}",
+    response_model=(ApplicationTimelineResponse),
+)
+async def update_application_timeline_event(
+    application_id: UUID,
+    event_id: UUID,
+    payload: (ApplicationTimelineUpdateRequest),
+    current_user: CurrentUser,
+    service: (ApplicationTimelineServiceDependency),
+) -> ApplicationTimelineResponse:
+    try:
+        event = await service.update(
+            event_id=event_id,
+            application_id=application_id,
+            user=current_user,
+            payload=payload,
+        )
+    except (
+        TimelineApplicationNotFoundError,
+        TimelineEventNotFoundError,
+    ) as exc:
+        raise HTTPException(
+            status_code=(status.HTTP_404_NOT_FOUND),
+            detail=str(exc),
+        ) from exc
+    except TimelinePersistenceError as exc:
+        raise HTTPException(
+            status_code=(status.HTTP_500_INTERNAL_SERVER_ERROR),
+            detail=str(exc),
+        ) from exc
+
+    return ApplicationTimelineResponse.model_validate(event)
+
+
+@router.delete(
+    "/{application_id}/timeline/{event_id}",
+    status_code=(status.HTTP_204_NO_CONTENT),
+)
+async def delete_application_timeline_event(
+    application_id: UUID,
+    event_id: UUID,
+    current_user: CurrentUser,
+    service: (ApplicationTimelineServiceDependency),
+) -> Response:
+    try:
+        await service.delete(
+            event_id=event_id,
+            application_id=application_id,
+            user=current_user,
+        )
+    except (
+        TimelineApplicationNotFoundError,
+        TimelineEventNotFoundError,
+    ) as exc:
+        raise HTTPException(
+            status_code=(status.HTTP_404_NOT_FOUND),
+            detail=str(exc),
+        ) from exc
+    except TimelinePersistenceError as exc:
         raise HTTPException(
             status_code=(status.HTTP_500_INTERNAL_SERVER_ERROR),
             detail=str(exc),

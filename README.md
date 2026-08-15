@@ -1797,3 +1797,49 @@ Build a dedicated page for viewing and managing individual job applications.
 ✅ User isolation maintained  
 ✅ Day 25 Timeline section prepared  
 ✅ Day 24 completed
+
+## Day 25 — Application Timeline
+
+### Objective
+
+Build a persistent timeline for tracking important events throughout each job application.
+
+### Implemented
+
+- PostgreSQL-backed application timeline
+- Automatic `Application Submitted` event creation
+- Automatic timeline events on application status changes
+- Manual timeline event creation
+- Edit and delete support for manual events
+- Chronological event display
+- Event type, source, date/time, title, and description
+- System and manual event distinction
+- User-level application and timeline isolation
+- Existing applications backfilled with an initial timeline event
+- Gmail-ready timeline source architecture
+
+### Event Sources
+
+- `system` — automatically generated
+- `manual` — added by the user
+- `gmail` — reserved for Gmail Intelligence
+- `integration` — reserved for future integrations
+
+### Main Files
+
+- `backend/app/models/application_timeline.py`
+- `backend/app/schemas/application_timeline.py`
+- `backend/app/repositories/application_timeline.py`
+- `backend/app/services/application_timeline.py`
+- `backend/migrations/versions/20260815_0005_create_application_timeline.py`
+- `frontend/src/components/applications/application-timeline.tsx`
+- `frontend/src/lib/applications.ts`
+
+### Status
+
+✅ Timeline persistence completed  
+✅ Automatic system events completed  
+✅ Manual timeline events completed  
+✅ Timeline UI completed  
+✅ Gmail-ready event architecture completed  
+✅ Day 25 completed

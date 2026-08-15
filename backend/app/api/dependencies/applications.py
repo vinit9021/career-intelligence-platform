@@ -2,8 +2,9 @@ from typing import Annotated
 
 from fastapi import Depends
 
-from app.api.dependencies.auth import (
-    DbSession,
+from app.api.dependencies.auth import DbSession
+from app.repositories.application_timeline import (
+    ApplicationTimelineRepository,
 )
 from app.services.applications import (
     ApplicationService,
@@ -13,7 +14,10 @@ from app.services.applications import (
 def get_application_service(
     session: DbSession,
 ) -> ApplicationService:
-    return ApplicationService(session=session)
+    return ApplicationService(
+        session=session,
+        timeline_repository=(ApplicationTimelineRepository(session)),
+    )
 
 
 ApplicationServiceDependency = Annotated[

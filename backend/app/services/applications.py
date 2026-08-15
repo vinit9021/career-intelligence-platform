@@ -1,5 +1,6 @@
+from datetime import UTC, datetime, time
 from typing import Any
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
@@ -8,6 +9,12 @@ from sqlalchemy.ext.asyncio import (
 from app.models import (
     Application,
     User,
+)
+from app.models.application_timeline import (
+    ApplicationTimelineEvent,
+)
+from app.repositories.application_timeline import (
+    ApplicationTimelineRepository,
 )
 from app.repositories.applications import (
     ApplicationRepository,
@@ -35,8 +42,11 @@ class ApplicationService:
         *,
         session: AsyncSession,
         repository: (ApplicationRepository | None) = None,
+        timeline_repository: ApplicationTimelineRepository | None = None,
     ) -> None:
         self._session = session
+
+        self._timeline_repository = timeline_repository
 
         self._repository = repository if repository is not None else ApplicationRepository(session)
 
@@ -56,6 +66,7 @@ class ApplicationService:
             data["job_url"] = str(job_url)
 
         application = Application(
+            id=uuid4(),
             user_id=user.id,
             source=source,
             external_id=external_id,
@@ -65,6 +76,35 @@ class ApplicationService:
         self._repository.add(application)
 
         try:
+            # DAY25_APPLICATION_CREATED_EVENT
+            if self._timeline_repository is not None:
+                timeline_source = (
+                    source
+                    if source
+                    in {
+                        "gmail",
+                        "integration",
+                    }
+                    else "system"
+                )
+
+                self._timeline_repository.add(
+                    ApplicationTimelineEvent(
+                        application_id=application.id,
+                        user_id=user.id,
+                        event_type="application_submitted",
+                        title="Application submitted",
+                        description=("Application added to Career Intelligence."),
+                        related_status=payload.status,
+                        source=timeline_source,
+                        event_at=datetime.combine(
+                            payload.applied_at,
+                            time.min,
+                            tzinfo=UTC,
+                        ),
+                    )
+                )
+
             await self._session.commit()
 
             await self._session.refresh(application)
@@ -105,18 +145,13 @@ class ApplicationService:
         user: User,
         application_id: UUID,
     ) -> Application:
-        application = (
-            await self._repository
-            .get_by_id_for_user(
-                application_id=application_id,
-                user_id=user.id,
-            )
+        application = await self._repository.get_by_id_for_user(
+            application_id=application_id,
+            user_id=user.id,
         )
 
         if application is None:
-            raise ApplicationNotFoundError(
-                "Application not found."
-            )
+            raise ApplicationNotFoundError("Application not found.")
 
         return application
 
@@ -135,6 +170,9 @@ class ApplicationService:
         if application is None:
             raise (ApplicationNotFoundError("Application not found."))
 
+        # DAY25_PREVIOUS_STATUS
+        previous_status = application.status
+
         data: dict[str, Any] = payload.model_dump(exclude_unset=True)
 
         if "job_url" in data and data["job_url"] is not None:
@@ -148,6 +186,28 @@ class ApplicationService:
                 application,
                 field_name,
                 value,
+            )
+
+        # DAY25_STATUS_CHANGED_EVENT
+        if self._timeline_repository is not None and application.status != previous_status:
+            status_label = application.status.replace("_", " ").title()
+
+            self._timeline_repository.add(
+                ApplicationTimelineEvent(
+                    application_id=application.id,
+                    user_id=user.id,
+                    event_type="status_changed",
+                    title=(f"Status changed to {status_label}"),
+                    description=(
+                        f"Application status changed "
+                        f"from "
+                        f"{previous_status.replace('_', ' ').title()} "
+                        f"to {status_label}."
+                    ),
+                    related_status=application.status,
+                    source="system",
+                    event_at=datetime.now(UTC),
+                )
             )
 
         try:

@@ -27,7 +27,7 @@ const navigation = [
     label: "Analytics",
     href: "/analytics",
     icon: AnalyticsIcon,
-    enabled: false,
+    enabled: true,
   },
   {
     label: "Notifications",

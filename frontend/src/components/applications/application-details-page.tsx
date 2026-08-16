@@ -653,7 +653,6 @@ export function ApplicationDetailsPage({ applicationId }: ApplicationDetailsPage
         </div>
       )}
 
-      
       <ApplicationTimeline key={application.updated_at} applicationId={application.id} />
     </div>
   );

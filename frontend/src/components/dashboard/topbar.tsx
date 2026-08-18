@@ -2,7 +2,8 @@
 
 import { useRouter } from "next/navigation";
 
-import { BellIcon, MenuIcon, SearchIcon } from "@/components/dashboard/icons";
+import { MenuIcon, SearchIcon } from "@/components/dashboard/icons";
+import { NotificationBell } from "@/components/notifications/notification-bell";
 import { clearAuthSession, loadAuthSession } from "@/lib/auth-storage";
 
 interface TopbarProps {
@@ -44,22 +45,12 @@ export function Topbar({ onOpenMenu }: TopbarProps) {
             placeholder="Search applications, companies, roles..."
             disabled
             className="h-10 w-full cursor-not-allowed rounded-xl border border-slate-200 bg-slate-50 pr-4 pl-10 text-sm text-slate-500 outline-none"
-            aria-label="Search dashboard"
           />
         </div>
       </div>
 
-      <div className="ml-auto flex items-center gap-2 sm:gap-3">
-        <button
-          type="button"
-          disabled
-          className="relative inline-flex size-10 cursor-not-allowed items-center justify-center rounded-xl border border-slate-200 text-slate-500"
-          aria-label="Notifications"
-        >
-          <BellIcon className="size-5" />
-
-          <span className="absolute top-2 right-2 size-2 rounded-full bg-indigo-500" />
-        </button>
+      <div className="ml-auto flex items-center gap-3">
+        <NotificationBell />
 
         <div className="hidden h-8 w-px bg-slate-200 sm:block" />
 

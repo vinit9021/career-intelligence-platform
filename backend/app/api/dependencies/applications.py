@@ -6,6 +6,9 @@ from app.api.dependencies.auth import DbSession
 from app.repositories.application_timeline import (
     ApplicationTimelineRepository,
 )
+from app.repositories.notifications import (
+    NotificationRepository,
+)
 from app.services.applications import (
     ApplicationService,
 )
@@ -17,6 +20,7 @@ def get_application_service(
     return ApplicationService(
         session=session,
         timeline_repository=(ApplicationTimelineRepository(session)),
+        notification_repository=(NotificationRepository(session)),
     )
 
 

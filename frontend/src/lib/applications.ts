@@ -209,7 +209,7 @@ export async function listApplicationTimeline(
   applicationId: string,
 ): Promise<ApplicationTimelineEvent[]> {
   return authenticatedRequest<ApplicationTimelineEvent[]>(
-    `/applications/${applicationId}/timeline?order=asc`,
+    `/applications/${applicationId}/timeline?order=desc`,
   );
 }
 

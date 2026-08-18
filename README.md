@@ -1882,3 +1882,55 @@ Build an authenticated analytics dashboard using real application and timeline d
 ✅ Status and monthly trends completed  
 ✅ Recent activity integration completed  
 ✅ Day 26 completed
+
+## Day 27 — Notification Center
+
+### Objective
+
+Build a persistent notification system for important application activity.
+
+### Implemented
+
+- Notifications page
+- Notification sidebar navigation
+- Clickable top-bar notification bell
+- Unread notification count
+- PostgreSQL notification storage
+- Automatic notifications on application status changes
+- All and Unread notification filters
+- Mark notification as read/unread
+- Mark all notifications as read
+- Delete notifications
+- Direct navigation to related applications
+- Authenticated user-level notification isolation
+- Notification pagination support
+- Gmail-ready notification source architecture
+- Application timeline updated to show latest activity first
+
+### Notification Sources
+
+- `system` — automatically generated
+- `gmail` — reserved for future Gmail Intelligence
+- `integration` — reserved for future integrations
+
+### Main Files
+
+- `backend/app/models/notification.py`
+- `backend/app/schemas/notification.py`
+- `backend/app/repositories/notifications.py`
+- `backend/app/services/notifications.py`
+- `backend/app/api/v1/notifications.py`
+- `backend/migrations/versions/20260818_0006_create_notifications.py`
+- `frontend/src/lib/notifications.ts`
+- `frontend/src/components/notifications/`
+- `frontend/src/app/notifications/`
+
+### Status
+
+- ✅ Notification backend completed
+- ✅ Notification Center UI completed
+- ✅ Notification bell and unread count completed
+- ✅ Automatic status notifications completed
+- ✅ Read/unread management completed
+- ✅ Latest-first application timeline completed
+- ✅ Day 27 completed

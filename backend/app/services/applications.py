@@ -13,11 +13,15 @@ from app.models import (
 from app.models.application_timeline import (
     ApplicationTimelineEvent,
 )
+from app.models.notification import Notification
 from app.repositories.application_timeline import (
     ApplicationTimelineRepository,
 )
 from app.repositories.applications import (
     ApplicationRepository,
+)
+from app.repositories.notifications import (
+    NotificationRepository,
 )
 from app.schemas.application import (
     ApplicationCreateRequest,
@@ -43,8 +47,11 @@ class ApplicationService:
         session: AsyncSession,
         repository: (ApplicationRepository | None) = None,
         timeline_repository: ApplicationTimelineRepository | None = None,
+        notification_repository: NotificationRepository | None = None,
     ) -> None:
         self._session = session
+
+        self._notification_repository = notification_repository
 
         self._timeline_repository = timeline_repository
 
@@ -102,6 +109,23 @@ class ApplicationService:
                             time.min,
                             tzinfo=UTC,
                         ),
+                    )
+                )
+
+            # DAY27_APPLICATION_NOTIFICATION
+            if self._notification_repository is not None:
+                self._notification_repository.add(
+                    Notification(
+                        user_id=user.id,
+                        application_id=application.id,
+                        type="application_update",
+                        title="Application added",
+                        message=(
+                            f"{application.company} - "
+                            f"{application.role} was added "
+                            f"to your application tracker."
+                        ),
+                        source="system",
                     )
                 )
 
@@ -211,6 +235,38 @@ class ApplicationService:
             )
 
         try:
+            # DAY27_STATUS_NOTIFICATION
+            if self._notification_repository is not None and application.status != previous_status:
+                status_label = application.status.replace("_", " ").title()
+
+                previous_label = previous_status.replace("_", " ").title()
+
+                notification_type = {
+                    "online_assessment": "online_assessment",
+                    "interview": "interview",
+                    "offer": "offer",
+                    "rejected": "rejection",
+                }.get(
+                    application.status,
+                    "application_update",
+                )
+
+                self._notification_repository.add(
+                    Notification(
+                        user_id=user.id,
+                        application_id=application.id,
+                        type=notification_type,
+                        title=(f"Application moved to {status_label}"),
+                        message=(
+                            f"{application.company} - "
+                            f"{application.role} changed "
+                            f"from {previous_label} "
+                            f"to {status_label}."
+                        ),
+                        source="system",
+                    )
+                )
+
             await self._session.commit()
 
             await self._session.refresh(application)

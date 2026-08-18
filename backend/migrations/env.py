@@ -15,6 +15,7 @@ from app.db.base import Base
 from app.models import (
     Application,
     ApplicationTimelineEvent,
+    Notification,
     Profile,
     RefreshToken,
     Resume,
@@ -37,6 +38,7 @@ config.set_main_option(
 )
 
 REGISTERED_MODELS = (
+    Notification,
     ApplicationTimelineEvent,
     Application,
     User,

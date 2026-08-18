@@ -33,7 +33,7 @@ const navigation = [
     label: "Notifications",
     href: "/notifications",
     icon: BellIcon,
-    enabled: false,
+    enabled: true,
   },
 ];
 

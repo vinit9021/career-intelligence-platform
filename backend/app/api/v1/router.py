@@ -8,6 +8,7 @@ from app.api.v1.auth import (
 from app.api.v1.health import (
     router as health_router,
 )
+from app.api.v1.notifications import router as notifications_router
 from app.api.v1.resume_library import router as resume_library_router
 from app.api.v1.resumes import (
     router as resumes_router,
@@ -20,6 +21,7 @@ from app.api.v1.users import (
 )
 
 api_v1_router = APIRouter()
+api_v1_router.include_router(notifications_router)
 api_v1_router.include_router(analytics_router)
 api_v1_router.include_router(applications_router)
 

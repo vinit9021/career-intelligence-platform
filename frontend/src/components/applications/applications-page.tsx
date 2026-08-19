@@ -141,7 +141,7 @@ export function ApplicationsPage() {
   }
 
   async function handleDelete(application: Application) {
-    const confirmed = window.confirm(`Delete ${application.company} ? ${application.role}?`);
+    const confirmed = window.confirm(`Delete ${application.company} | ${application.role}?`);
 
     if (!confirmed) {
       return;
@@ -366,13 +366,13 @@ export function ApplicationsPage() {
                             rel="noreferrer"
                             className="mt-1 inline-block text-xs font-semibold text-indigo-600 hover:text-indigo-700"
                           >
-                            Open job posting ?
+                            Open job posting
                           </a>
                         ) : null}
                       </td>
 
                       <td className="px-5 py-4 text-sm text-slate-600">
-                        {application.location || "?"}
+                        {application.location || "Not specified"}
                       </td>
 
                       <td className="px-5 py-4 text-sm text-slate-600">
